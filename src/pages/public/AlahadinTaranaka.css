@@ -1,0 +1,915 @@
+.alahadin-page{max-width:1280px;margin:auto;padding:20px 30px;color:#082b75}.alahadin-head,.alahadin-card{background:#fff;border:1px solid #dceafa;border-radius:14px;padding:20px;margin-bottom:16px}.alahadin-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.alahadin-actions,.alahadin-tabs{display:flex;gap:8px;flex-wrap:wrap}.alahadin-actions button,.alahadin-tabs button,.alahadin-page button{padding:9px 13px;border:1px solid #bcd5ef;border-radius:8px;background:#fff;color:#0759c0;font:inherit;font-weight:700;cursor:pointer}.alahadin-actions .primary,.alahadin-tabs .active{background:#0767dd;color:#fff}.alahadin-table{width:100%;border-collapse:collapse}.alahadin-table th,.alahadin-table td{padding:11px;border-bottom:1px solid #e1ebf7;text-align:left}.alahadin-mobile{display:none}.alahadin-badge{padding:4px 8px;border-radius:999px;background:#eaf3ff;font-size:12px;font-weight:800}.is-cancelled{opacity:.58}.alahadin-modal{position:fixed;inset:0;z-index:20;background:#10284a66;display:grid;place-items:center;padding:16px}.alahadin-modal form{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fff;padding:22px;border-radius:14px;display:grid;gap:12px}.alahadin-modal label{display:grid;gap:5px;font-weight:700}.alahadin-modal input,.alahadin-modal select,.alahadin-modal textarea{padding:10px;border:1px solid #bcd5ef;border-radius:8px;font:inherit}.alahadin-checkboxes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.alahadin-checkboxes label{display:flex;font-weight:400}.alahadin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.alahadin-stats article{padding:14px;background:#f4f9ff;border-radius:10px}@media(max-width:700px){.alahadin-page{padding:14px}.alahadin-head{display:grid}.alahadin-table-wrap{display:none}.alahadin-mobile{display:grid;gap:9px}.alahadin-mobile article{padding:14px;border:1px solid #dceafa;border-radius:10px;background:#fff}.alahadin-stats{grid-template-columns:repeat(2,1fr)}.alahadin-checkboxes{grid-template-columns:1fr}}
+.alahadin-warning { margin: 1rem 0; padding: .85rem 1rem; color: #7a4c00; background: #fff4dc; border: 1px solid #efc46a; border-radius: .7rem; }
+.alahadin-table small { display: block; margin-top: .25rem; color: #64748b; }
+.alahadin-selector { display: grid; gap: .65rem; }
+.alahadin-selected { margin: 0; padding: .65rem .8rem; border-radius: .55rem; color: #14532d; background: #ecfdf3; }
+.alahadin-search-results { display: grid; gap: .35rem; max-height: 12rem; overflow-y: auto; }
+.alahadin-search-results button { text-align: left; }
+.alahadin-stat-section { margin: 1rem 0; }
+.alahadin-stat-section h3 { margin: 0 0 .55rem; font-size: 1rem; }
+.alahadin-stat-table { display: grid; gap: .35rem; }
+.alahadin-stat-row { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem .75rem; background: #f8fafc; border-radius: .5rem; }
+@media (max-width: 700px) { .alahadin-stat-row { align-items: flex-start; flex-direction: column; gap: .2rem; } .alahadin-table thead { display: none; } .alahadin-table, .alahadin-table tbody, .alahadin-table tr, .alahadin-table td { display: block; width: 100%; } .alahadin-table tr { padding: .8rem 0; border-bottom: 1px solid #e2e8f0; } .alahadin-table td { padding: .2rem 0; border: 0; } }.alahadin-stats article small { display:block; margin-bottom:.35rem; color:#456; text-transform:capitalize; } .alahadin-stats article strong { display:block; font-size:1.35rem; color:#082b75; } .alahadin-modal section { width:min(620px,100%); max-height:90vh; overflow:auto; background:#fff; padding:22px; border-radius:14px; display:grid; gap:12px; }
+/* Direction graphique dédiée au module Alahadin'ny Taranaka */
+.alahadin-page {
+  max-width: 1320px;
+  min-height: calc(100vh - 40px);
+  padding: 28px 32px 48px;
+  color: #102b5c;
+  background:
+    radial-gradient(circle at 100% 0, #eaf5ff 0, transparent 25rem),
+    #f7faff;
+}
+.alahadin-page > a {
+  display: inline-flex;
+  margin: 0 0 14px;
+  color: #27724d;
+  font-size: .88rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.alahadin-head,
+.alahadin-card {
+  border: 1px solid #dbe7f5;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(22, 73, 140, .055);
+}
+.alahadin-head {
+  padding: 24px 26px;
+  margin-bottom: 20px;
+  background: #fff;
+}
+.alahadin-head h1 {
+  margin: 0 0 6px;
+  color: #073e91;
+  font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+  letter-spacing: -.035em;
+}
+.alahadin-head p {
+  margin: 5px 0 0;
+  color: #59708f;
+  line-height: 1.5;
+}
+.alahadin-list-head {
+  border-left: 4px solid #1268da;
+}
+.alahadin-actions {
+  align-items: center;
+  gap: 10px;
+}
+.alahadin-actions button,
+.alahadin-tabs button,
+.alahadin-page button {
+  min-height: 40px;
+  padding: 9px 15px;
+  border: 1px solid #c8d9ec;
+  border-radius: 9px;
+  background: #fff;
+  color: #075bc7;
+  box-shadow: none;
+  transition: transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.alahadin-actions button:hover,
+.alahadin-tabs button:hover,
+.alahadin-page button:hover {
+  border-color: #7eace1;
+  background: #f5f9ff;
+  transform: translateY(-1px);
+}
+.alahadin-actions .primary,
+.alahadin-tabs .active {
+  border-color: #0965d7;
+  color: #fff;
+  background: linear-gradient(135deg, #0875eb, #0755bd);
+  box-shadow: 0 5px 12px rgba(7, 91, 199, .2);
+}
+.alahadin-card {
+  padding: 10px 18px;
+  background: #fff;
+}
+.alahadin-table {
+  overflow: hidden;
+  border-radius: 11px;
+}
+.alahadin-table th {
+  padding: 13px 12px;
+  color: #254a7e;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: #eef6ff;
+  border-bottom: 1px solid #d8e7f7;
+}
+.alahadin-table td {
+  padding: 14px 12px;
+  color: #173d70;
+  border-bottom: 1px solid #e7eef7;
+  vertical-align: middle;
+}
+.alahadin-table tbody tr {
+  transition: background .16s ease;
+}
+.alahadin-table tbody tr:hover {
+  background: #f7fbff;
+}
+.alahadin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.alahadin-table a {
+  color: #0560cb;
+  font-size: .86rem;
+  font-weight: 800;
+}
+.alahadin-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .03em;
+}
+.alahadin-status-brouillon {
+  color: #79570a;
+  background: #fff5d8;
+  border-color: #f5df9b;
+}
+.alahadin-status-ouverte {
+  color: #09633a;
+  background: #e2f8eb;
+  border-color: #bcebcf;
+}
+.alahadin-status-cloturee {
+  color: #0754ac;
+  background: #e5f0ff;
+  border-color: #c5dcfb;
+}
+.is-cancelled {
+  opacity: .62;
+  background: #fff7f7 !important;
+}
+.alahadin-tabs {
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 5px;
+  width: fit-content;
+  border: 1px solid #dbe7f5;
+  border-radius: 11px;
+  background: #fff;
+}
+.alahadin-tabs button {
+  min-height: 36px;
+  border: 0;
+}
+.alahadin-tabs button:hover {
+  transform: none;
+}
+.alahadin-modal {
+  z-index: 50;
+  padding: 18px;
+  background: rgba(8, 32, 72, .48);
+  backdrop-filter: blur(3px);
+}
+.alahadin-modal form,
+.alahadin-modal section {
+  width: min(640px, 100%);
+  padding: 27px;
+  border: 1px solid #d7e5f5;
+  border-radius: 17px;
+  box-shadow: 0 22px 55px rgba(2, 35, 84, .26);
+}
+.alahadin-modal h2 {
+  margin: 0 0 6px;
+  color: #073e91;
+  font-size: 1.35rem;
+}
+.alahadin-modal label {
+  color: #173d70;
+  font-size: .9rem;
+}
+.alahadin-modal input,
+.alahadin-modal select,
+.alahadin-modal textarea {
+  min-height: 43px;
+  border-color: #cbdced;
+  background: #fbfdff;
+  box-shadow: inset 0 1px 2px rgba(15, 50, 90, .025);
+}
+.alahadin-modal textarea {
+  min-height: 106px;
+}
+.alahadin-modal input:focus,
+.alahadin-modal select:focus,
+.alahadin-modal textarea:focus {
+  outline: 3px solid rgba(27, 119, 229, .13);
+  border-color: #1670da;
+}
+.alahadin-checkboxes {
+  padding: 12px;
+  border: 1px solid #d9e6f4;
+  border-radius: 10px;
+  background: #f9fcff;
+}
+.alahadin-checkboxes label {
+  color: #234976;
+}
+.alahadin-detail-head {
+  position: relative;
+  align-items: flex-start;
+  border-left: 4px solid #14855b;
+}
+.alahadin-detail-head h1 {
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+}
+.alahadin-detail-head .alahadin-actions {
+  padding-top: 6px;
+}
+.alahadin-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 8px 0 16px;
+}
+.alahadin-stats article,
+.alahadin-stat-section {
+  border: 1px solid #d9e8f7;
+  border-radius: 12px;
+  background: #fbfdff;
+}
+.alahadin-stats article {
+  padding: 15px;
+}
+.alahadin-stats article small {
+  color: #557092;
+  font-weight: 700;
+}
+.alahadin-stats article strong {
+  color: #073e91;
+}
+.alahadin-stat-section {
+  margin: 15px 0;
+  overflow: hidden;
+}
+.alahadin-stat-section h3 {
+  margin: 0;
+  padding: 12px 15px;
+  color: #0b4a99;
+  font-size: .84rem;
+  font-weight: 850;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #edf6ff, #fbfdff);
+  border-bottom: 1px solid #dce9f7;
+}
+.alahadin-stat-table {
+  gap: 0;
+}
+.alahadin-stat-row {
+  align-items: center;
+  min-height: 43px;
+  padding: 10px 15px;
+  color: #274b7a;
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid #e7eff8;
+}
+.alahadin-stat-row:last-child {
+  border-bottom: 0;
+}
+.alahadin-stat-row strong {
+  color: #073e91;
+  white-space: nowrap;
+}
+.alahadin-material-group {
+  padding: 11px 15px 4px;
+  border-bottom: 1px solid #e2edf8;
+}
+.alahadin-material-group:last-child {
+  border-bottom: 0;
+}
+.alahadin-material-group h4 {
+  margin: 0 0 7px;
+  color: #116847;
+  font-size: .86rem;
+}
+.alahadin-material-group .alahadin-stat-row {
+  padding-right: 0;
+  padding-left: 0;
+}
+.alahadin-warning {
+  box-shadow: 0 3px 9px rgba(166, 111, 0, .07);
+}
+@media(max-width:700px) {
+  .alahadin-page { padding: 18px 14px 32px; }
+  .alahadin-head { padding: 19px; }
+  .alahadin-head h1 { font-size: 1.5rem; }
+  .alahadin-detail-head .alahadin-actions { width: 100%; padding-top: 12px; }
+  .alahadin-detail-head .alahadin-actions button { flex: 1; }
+  .alahadin-card { padding: 8px 12px; }
+  .alahadin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .alahadin-stats article { padding: 12px; }
+  .alahadin-modal form, .alahadin-modal section { padding: 20px; border-radius: 14px; }
+  .alahadin-stat-row { min-height: 40px; padding: 10px 12px; }
+}
+/* Composition pixel-close : surfaces, tableaux et formulaires Alahadin */
+.alahadin-list-page .alahadin-head { min-height: 108px; margin-bottom: 20px; }
+.alahadin-list-page .alahadin-head > div { display: grid; gap: 2px; }
+.alahadin-list-page .alahadin-head > .primary { min-width: 164px; }
+.alahadin-list-page .alahadin-table-wrap {
+  padding: 12px 14px 24px;
+  border: 1px solid #dce8f5;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 7px 19px rgba(18, 71, 135, .06);
+}
+.alahadin-list-page .alahadin-table { border-radius: 0; }
+.alahadin-list-page .alahadin-table th:first-child,
+.alahadin-list-page .alahadin-table td:first-child { width: 18%; }
+.alahadin-list-page .alahadin-table th:last-child,
+.alahadin-list-page .alahadin-table td:last-child { width: 11%; }
+.alahadin-list-page .alahadin-table td { height: 50px; }
+.alahadin-detail-page .alahadin-head {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  min-height: 112px;
+  gap: 0 15px;
+  align-items: center;
+}
+.alahadin-detail-page .alahadin-head > div:first-child::before {
+  content: '▣';
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: #087f50;
+  font-size: 25px;
+  font-weight: 800;
+  background: #e0f8e9;
+  border-radius: 10px;
+}
+.alahadin-detail-page .alahadin-head h1 { line-height: 1; }
+.alahadin-detail-page .alahadin-head .alahadin-badge { margin-left: 10px; vertical-align: 5px; }
+.alahadin-detail-page .alahadin-head .alahadin-actions { justify-self: end; }
+.alahadin-detail-page .alahadin-card { padding: 0; overflow: hidden; }
+.alahadin-detail-page .alahadin-card > p { padding: 20px; }
+.alahadin-detail-page .alahadin-table th { height: 46px; }
+.alahadin-detail-page .alahadin-table td:first-child { min-width: 200px; font-weight: 700; }
+.alahadin-detail-page .alahadin-table td:first-child small { margin-top: 4px; color: #7185a3; font-size: .64rem; font-weight: 800; letter-spacing: .045em; }
+.alahadin-detail-page .alahadin-table td:last-child { width: 155px; }
+.alahadin-detail-page .alahadin-table .alahadin-actions button {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: .75rem;
+}
+.alahadin-detail-page .is-cancelled td { text-decoration-color: #e4b6b6; }
+.alahadin-detail-page .alahadin-stat-section:first-child {
+  position: relative;
+  min-height: 132px;
+  overflow: hidden;
+  border-color: #bde8cf;
+  background: linear-gradient(125deg, #f2fff6 0%, #e8faef 58%, #d8f5e4 100%);
+}
+.alahadin-detail-page .alahadin-stat-section:first-child::after {
+  content: '';
+  position: absolute;
+  right: -45px;
+  bottom: -68px;
+  width: 240px;
+  height: 145px;
+  border: 25px solid rgba(88, 207, 143, .15);
+  border-radius: 50%;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child h3 {
+  padding: 22px 24px 0 86px;
+  color: #156644;
+  background: transparent;
+  border: 0;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child h3::before {
+  content: '● ● ●';
+  position: absolute;
+  left: 22px;
+  top: 50px;
+  color: #0a8250;
+  font-size: 18px;
+  letter-spacing: -6px;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child .alahadin-stat-row {
+  position: relative;
+  z-index: 1;
+  padding: 0 24px 20px 86px;
+  min-height: auto;
+  border: 0;
+  background: transparent;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child .alahadin-stat-row span {
+  display: none;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child .alahadin-stat-row strong {
+  color: #075332;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: .01em;
+}
+.alahadin-detail-page .alahadin-stat-section:nth-child(2) h3::before,
+.alahadin-detail-page .alahadin-stat-section:nth-child(3) h3::before,
+.alahadin-detail-page .alahadin-stat-section:nth-child(4) h3::before {
+  display: inline-block;
+  margin-right: 9px;
+  color: #0963ca;
+  font-size: 1rem;
+  content: '▦';
+}
+.alahadin-detail-page .alahadin-stat-section:nth-child(3) {
+  border-color: #f0dfbf;
+  background: #fffcf5;
+}
+.alahadin-detail-page .alahadin-stat-section:nth-child(3) h3 {
+  color: #8b5a08;
+  background: linear-gradient(90deg, #fff5df, #fffdf9);
+}
+.alahadin-detail-page .alahadin-stat-section:nth-child(4) {
+  border-color: #cfe0f5;
+  background: #f8fbff;
+}
+.alahadin-detail-page .alahadin-stat-section:nth-child(4) h3 {
+  background: linear-gradient(90deg, #eaf4ff, #fcfeff);
+}
+.alahadin-modal form {
+  width: min(550px, 100%);
+  padding: 31px 34px 25px;
+}
+.alahadin-modal form > h2 { font-size: 1.5rem; }
+.alahadin-modal form > label,
+.alahadin-modal form > fieldset,
+.alahadin-modal form > .alahadin-selector {
+  margin-top: 3px;
+}
+.alahadin-modal form > .alahadin-actions {
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.alahadin-modal form > .alahadin-actions button:last-child {
+  min-width: 132px;
+}
+.alahadin-modal .alahadin-don-kind > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.alahadin-modal .alahadin-don-kind button {
+  min-height: 88px;
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  color: #845500;
+  border-color: #dfe7f2;
+  background: #fff;
+}
+.alahadin-modal .alahadin-don-kind button.selected {
+  color: #075ac6;
+  border: 2px solid #0870e5;
+  background: #f4f9ff;
+  box-shadow: inset 0 0 0 1px rgba(8,112,229,.06);
+}
+.alahadin-cancel-modal section {
+  width: min(440px, 100%);
+  text-align: center;
+}
+.alahadin-cancel-modal section h2 { color: #c92d37; }
+.alahadin-cancel-modal section > p { color: #6e7d93; }
+.alahadin-cancel-modal .alahadin-actions { justify-content: center; }
+.alahadin-cancel-modal .alahadin-actions .primary {
+  border-color: #e2434a;
+  background: #e5434a;
+}
+@media(max-width:700px) {
+  .alahadin-list-page .alahadin-table-wrap { display: none; }
+  .alahadin-detail-page .alahadin-head { grid-template-columns: 48px 1fr; }
+  .alahadin-detail-page .alahadin-head .alahadin-actions { grid-column: 1 / -1; justify-self: stretch; }
+  .alahadin-detail-page .alahadin-head .alahadin-actions button { width: 100%; }
+  .alahadin-detail-page .alahadin-table td:last-child { width: auto; }
+  .alahadin-detail-page .alahadin-stat-section:first-child h3 { padding-left: 68px; }
+  .alahadin-detail-page .alahadin-stat-section:first-child .alahadin-stat-row { padding-left: 68px; }
+  .alahadin-modal form { padding: 23px 20px; }
+}
+.alahadin-page {
+  --alahadin-blue: #073f92;
+  --alahadin-action-blue: #0868df;
+  --alahadin-green: #087548;
+  --alahadin-green-soft: #ebfbf1;
+  --alahadin-cream: #fff9ec;
+  --alahadin-blue-soft: #eff7ff;
+  --alahadin-border: #d8e6f4;
+  --alahadin-text: #073b85;
+  --alahadin-muted: #657a99;
+}
+.alahadin-detail-head {
+  grid-template-columns: 54px minmax(0,1fr) auto !important;
+  min-height: 92px !important;
+  padding: 18px 22px !important;
+  border-left: 0 !important;
+}
+.alahadin-date-icon {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  color: var(--alahadin-green);
+  background: #dff8e9;
+  border-radius: 10px;
+}
+.alahadin-detail-head > div:first-child::before { display: none !important; }
+.alahadin-detail-head h1 { display: inline; font-size: 1.85rem !important; }
+.alahadin-detail-head p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 650px; }
+.alahadin-stats-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 12px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.alahadin-stats-grid > .alahadin-stat-section { margin: 0; }
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(1),
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(4) { grid-column: 1 / -1; }
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(1) { min-height: 132px; }
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(2),
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(3) { min-height: 188px; }
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(3) .alahadin-stat-row span,
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(4) .alahadin-stat-row span { display: grid; grid-template-columns: minmax(0,1fr) 78px 65px; gap: 12px; }
+.alahadin-icon-action {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px;
+  min-height: 32px !important;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 !important;
+}
+.alahadin-icon-action.edit { color: #0870dc !important; background: #e5f1ff !important; border-color: #cae1fb !important; }
+.alahadin-icon-action.cancel { color: #d33c48 !important; background: #fff0f1 !important; border-color: #ffd6d9 !important; }
+.alahadin-detail-page .alahadin-table .alahadin-actions { flex-wrap: nowrap; }
+.alahadin-cancel-modal section { text-align: center; }
+.alahadin-cancel-icon { display: grid; width: 54px; height: 54px; place-items: center; margin: 0 auto 8px; color: #db3542; background: #ffeaec; border-radius: 50%; }
+@media(max-width:700px) {
+  .alahadin-detail-head { grid-template-columns: 50px minmax(0,1fr) !important; }
+  .alahadin-detail-head .alahadin-actions { grid-column: 1 / -1; }
+  .alahadin-stats-grid { grid-template-columns: 1fr; }
+  .alahadin-stats-grid > .alahadin-stat-section:nth-child(1),
+  .alahadin-stats-grid > .alahadin-stat-section:nth-child(4) { grid-column: auto; }
+  .alahadin-detail-head p { white-space: normal; }
+}
+/* Maquette finale : composition spécifique Alahadin, sans image de fond. */
+.alahadin-list-page {
+  max-width: 1240px;
+  padding-top: 20px;
+  background: var(--alahadin-page, #f4f8fc);
+}
+.alahadin-list-page .alahadin-list-head {
+  min-height: 96px;
+  margin: 0 0 18px;
+  padding: 8px 10px 8px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.alahadin-list-page .alahadin-list-head h1 {
+  font-size: 1.85rem;
+}
+.alahadin-list-page .alahadin-list-head p {
+  color: #476486;
+  font-size: 1rem;
+}
+.alahadin-list-page .alahadin-list-head > .primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 43px;
+  padding: 0 18px;
+  border-radius: 7px;
+}
+.alahadin-list-page .alahadin-table-wrap {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(22, 73, 140, .045);
+}
+.alahadin-list-page .alahadin-table th {
+  height: 38px;
+  padding: 9px 13px;
+  font-size: .68rem;
+}
+.alahadin-list-page .alahadin-table td {
+  height: 48px;
+  padding: 10px 13px;
+  font-size: .82rem;
+}
+.alahadin-list-page .alahadin-table a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.alahadin-detail-page {
+  max-width: 1240px;
+  padding-top: 14px;
+}
+.alahadin-detail-page > a {
+  margin-bottom: 10px;
+}
+.alahadin-detail-head {
+  min-height: 90px !important;
+  margin-bottom: 13px;
+  padding: 16px 20px !important;
+  border-radius: 9px;
+}
+.alahadin-detail-head h1 {
+  margin-right: 8px;
+  color: #073b85;
+  font-size: 1.75rem !important;
+}
+.alahadin-detail-head p {
+  margin-top: 3px;
+  color: #496585;
+  font-size: .79rem;
+  line-height: 1.25;
+}
+.alahadin-detail-head p:last-child {
+  color: #123b78;
+  font-weight: 700;
+}
+.alahadin-detail-head .alahadin-badge {
+  min-height: 22px;
+  padding: 2px 8px;
+  font-size: .61rem;
+}
+.alahadin-detail-head .alahadin-actions {
+  gap: 8px;
+}
+.alahadin-detail-head .alahadin-actions button {
+  min-height: 37px;
+  border-radius: 7px;
+}
+.alahadin-tabs {
+  margin-bottom: 13px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.alahadin-tabs button {
+  min-height: 36px;
+  padding: 7px 19px;
+  border: 1px solid #d4e3f2;
+  border-radius: 6px;
+  font-size: .78rem;
+}
+.alahadin-tabs .active {
+  box-shadow: 0 3px 8px rgba(7, 91, 199, .16);
+}
+.alahadin-detail-page .alahadin-card:not(.alahadin-stats-grid) {
+  padding: 0;
+  border-radius: 9px;
+}
+.alahadin-detail-page .alahadin-table th {
+  height: 37px;
+  padding: 9px 13px;
+  font-size: .66rem;
+}
+.alahadin-detail-page .alahadin-table td {
+  min-height: 49px;
+  padding: 10px 13px;
+  font-size: .78rem;
+}
+.alahadin-detail-page .alahadin-table td:nth-child(2),
+.alahadin-detail-page .alahadin-table td:nth-child(3) {
+  white-space: nowrap;
+}
+.alahadin-detail-page .alahadin-table td:nth-child(4) {
+  white-space: nowrap;
+}
+.alahadin-detail-page .alahadin-table td:first-child small {
+  color: #6680a1;
+}
+.alahadin-detail-page .alahadin-table .is-cancelled small:last-child {
+  color: #b05b66;
+}
+.alahadin-icon-action {
+  border-radius: 5px !important;
+}
+.alahadin-stats-grid {
+  gap: 12px;
+}
+.alahadin-stats-grid > .alahadin-stat-section {
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(24, 71, 130, .035);
+}
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(1) {
+  min-height: 128px;
+}
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(2),
+.alahadin-stats-grid > .alahadin-stat-section:nth-child(3) {
+  min-height: 184px;
+}
+.alahadin-stat-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 15px;
+  font-size: .72rem;
+}
+.alahadin-stat-section h3 svg {
+  color: #0874e8;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child h3 svg {
+  position: absolute;
+  left: 21px;
+  top: 50px;
+  width: 45px;
+  height: 45px;
+  color: #087548;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child h3::before {
+  display: none;
+}
+.alahadin-detail-page .alahadin-stat-section:first-child .alahadin-stat-row {
+  padding-bottom: 19px;
+}
+.alahadin-mini-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.alahadin-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.alahadin-mini-table th,
+.alahadin-mini-table td {
+  padding: 9px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e5edf6;
+  color: #193f78;
+  font-size: .74rem;
+}
+.alahadin-mini-table th {
+  color: #0a3980;
+  font-size: .64rem;
+  font-weight: 850;
+  letter-spacing: .02em;
+}
+.alahadin-mini-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.alahadin-mini-table th:last-child,
+.alahadin-mini-table td:last-child {
+  text-align: right;
+  font-weight: 800;
+}
+.alahadin-money-table {
+  background: #fbfeff;
+}
+.alahadin-material-table {
+  border-color: #f0dfbf !important;
+  background: #fffdf7 !important;
+}
+.alahadin-material-table h3 {
+  color: #7f5105;
+  background: linear-gradient(90deg, #fff5e2, #fffdf9);
+}
+.alahadin-material-table h3 svg {
+  color: #9a650d;
+}
+.alahadin-material-table .alahadin-mini-table th,
+.alahadin-material-table .alahadin-mini-table td {
+  color: #63450c;
+}
+.alahadin-material-table .alahadin-mini-table th:last-child,
+.alahadin-material-table .alahadin-mini-table td:last-child {
+  text-align: left;
+  font-weight: inherit;
+}
+.alahadin-material-by-table {
+  background: #f9fcff !important;
+}
+.alahadin-material-by-table h3 {
+  background: linear-gradient(90deg, #eaf4ff, #fbfdff);
+}
+.alahadin-material-by-table .alahadin-mini-table th:nth-child(1),
+.alahadin-material-by-table .alahadin-mini-table td:nth-child(1) {
+  width: 31%;
+}
+.alahadin-material-by-table .alahadin-mini-table th:last-child,
+.alahadin-material-by-table .alahadin-mini-table td:last-child {
+  text-align: left;
+  font-weight: inherit;
+}
+.alahadin-don-kind {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.alahadin-don-kind legend {
+  margin-bottom: 7px;
+  color: #173d70;
+  font-size: .9rem;
+  font-weight: 700;
+}
+.alahadin-modal .alahadin-don-kind button {
+  border-radius: 7px;
+  font-size: .8rem;
+  font-weight: 800;
+}
+.alahadin-modal .alahadin-don-kind button svg {
+  justify-self: center;
+}
+.alahadin-cancel-modal section {
+  width: min(430px, 100%);
+  padding: 27px 28px 24px;
+}
+.alahadin-cancel-modal .alahadin-cancel-icon {
+  margin-bottom: 10px;
+}
+.alahadin-cancel-modal section > p {
+  margin: 0 0 16px;
+  font-size: .82rem;
+}
+.alahadin-cancel-summary {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 7px 10px;
+  margin: 0 0 17px;
+  padding: 14px;
+  text-align: left;
+  border: 1px solid #ffd4d7;
+  border-radius: 7px;
+  background: #fff5f5;
+}
+.alahadin-cancel-summary span {
+  color: #a13745;
+  font-size: .7rem;
+  font-weight: 800;
+}
+.alahadin-cancel-summary strong {
+  color: #24446f;
+  font-size: .74rem;
+  overflow-wrap: anywhere;
+}
+.alahadin-cancel-modal label {
+  text-align: left;
+}
+.alahadin-cancel-modal .alahadin-actions {
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+.alahadin-cancel-modal .alahadin-actions .primary {
+  min-width: 132px;
+  border-color: #e43e48;
+  background: #e43e48;
+}
+@media (max-width: 700px) {
+  .alahadin-list-page,
+  .alahadin-detail-page {
+    padding: 16px 14px 30px;
+  }
+  .alahadin-list-page .alahadin-list-head {
+    min-height: auto;
+    padding: 0;
+  }
+  .alahadin-list-page .alahadin-list-head > .primary {
+    width: 100%;
+    justify-content: center;
+  }
+  .alahadin-detail-head {
+    min-height: auto !important;
+  }
+  .alahadin-detail-head .alahadin-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .alahadin-detail-head .alahadin-actions button {
+    width: auto;
+  }
+  .alahadin-tabs {
+    width: 100%;
+  }
+  .alahadin-tabs button {
+    flex: 1;
+  }
+  .alahadin-mini-table th,
+  .alahadin-mini-table td {
+    padding: 9px 10px;
+  }
+  .alahadin-material-by-table .alahadin-mini-table {
+    min-width: 540px;
+  }
+  .alahadin-cancel-summary {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}

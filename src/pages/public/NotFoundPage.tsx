@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom'
+export function NotFoundPage() { return <section className="content-card"><h1>Page introuvable</h1><p>Cette adresse n’existe pas ou n’est pas encore disponible.</p><Link className="button-link" to="/connexion">Retour à la connexion</Link></section> }

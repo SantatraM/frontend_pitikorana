@@ -1,0 +1,7 @@
+export interface LibelleReference { id: string; libelle: string | null }
+export interface PersonneContact { id: string; telephone: string | null; whatsapp: string | null; email: string | null; facebook: string | null; lien_facebook: string | null }
+export interface PersonnePhoto { id: string; url_photo: string }
+export interface Personne { id:string; nom:string; prenom:string|null; nom_usage:string|null; autres_appellations:string|null; date_naissance:string|null; annee_naissance:number|null; lieu_naissance:string|null; date_deces:string|null; annee_deces:number|null; adresse:string|null; sexe:LibelleReference|null; statut:LibelleReference|null; lien:LibelleReference|null; ville:{id:string;nom:string;region?:{id:string;nom:string;pays?:{id:string;nom:string}|null}|null}|null; element:{id:string;nom:string;type_element:{libelle:string|null}|null}|null; razambe:{id:string;nom:string}|null; taranaka:{id:string;nom:string}|null; sampana:{id:string;nom:string}|null; contact:PersonneContact|null; photo:PersonnePhoto|null }
+export interface CreatePersonnePayload { nom:string; prenom:string|null; nom_usage:string|null; autres_appellations:string|null; id_sexe:string|null; id_statut:string|null; date_naissance:string|null; annee_naissance:number|null; lieu_naissance:string|null; date_deces:string|null; annee_deces:number|null; adresse:string|null; id_ville:string|null; id_lien:string|null; id_element:string|null }
+export type UpdatePersonnePayload = CreatePersonnePayload
+
