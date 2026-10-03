@@ -8,7 +8,7 @@ export interface ContactDraft { whatsapp: string | null; facebook: string | null
 export interface ActiviteDraft { id_activite: string; lieu_travail: string | null; etude_en_cours: string | null; formations: string | null; experience_anterieur: string | null; diplome_ou_apprentissage: string | null }
 export interface CompetenceDraft { id_competence: string; partageable: boolean }
 export interface CentreInteretDraft { id_centre_interet: string }
-export interface NouvellePersonneDonnees { personne: PersonneDraft; contact: ContactDraft | null; activites: ActiviteDraft[]; competences: CompetenceDraft[]; centres_interet: CentreInteretDraft[]; confidentialite?: PreferencesConfidentialite; photo_temporaire: string; origine_declaree?: DeclaredOrigin }
+export interface NouvellePersonneDonnees { personne: PersonneDraft; contact: ContactDraft | null; activites?: ActiviteDraft[]; competences?: CompetenceDraft[]; centres_interet?: CentreInteretDraft[]; confidentialite?: PreferencesConfidentialite; photo_temporaire: string; origine_declaree?: DeclaredOrigin }
 export interface CreationDemandePayload { id_personne: string | null; email: string | null; telephone: string | null; donnees: object | NouvellePersonneDonnees }
 export interface DemandeCreationResult { id: string; reference: string; statut: 'EN_ATTENTE'; date_demande: string; code_suivi: string }
 export interface SuiviDemandePayload { reference: string; code_suivi: string }
