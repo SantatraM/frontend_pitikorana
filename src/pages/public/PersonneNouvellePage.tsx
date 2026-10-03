@@ -4,21 +4,8 @@ import { ApiError } from "../../api/apiClient";
 import { rechercherPersonnesInscription } from "../../api/demandesInscription";
 import { createPersonne, createPersonneComplete } from "../../api/personnes";
 import { uploadPhotoPersonne } from "../../api/photosPersonne";
+import { loadPersonCatalogReferences, loadPersonCoreReferences } from "../../api/personFormReferences";
 import {
-  getActivites,
-  getCentresInteret,
-  getCompetences,
-  getDomainesActivite,
-} from "../../api/adminReferentiels";
-import {
-  getElements,
-  getLiensFalimanjaka,
-  getPays,
-  getRegions,
-  getSexes,
-  getStatuts,
-  getTypesElement,
-  getVilles,
   type ElementReference,
   type LienReference,
   type PaysReference,
@@ -28,7 +15,6 @@ import {
   type TypeElementReference,
   type VilleReference,
 } from "../../api/referentielsInscription";
-import { getTypesRelation } from "../../api/typesRelation";
 import { BranchCreateModal, type BranchType } from "../../components/branches/BranchCreateModal";
 import { useLanguage } from "../../hooks/useLanguage";
 import type { PersonneRecherchee } from "../../types/demandeInscription";
@@ -251,42 +237,27 @@ export function PersonneNouvellePage() {
   const [branchCreate, setBranchCreate] = useState<{ type: BranchType; razambeId: string; taranakaId: string } | null>(null);
   const [branchCreateHint, setBranchCreateHint] = useState<string | null>(null);
   useEffect(() => {
-    void Promise.all([
-      getSexes(),
-      getStatuts(),
-      getLiensFalimanjaka(),
-      getElements(),
-      getTypesElement(),
-      getPays(),
-      getRegions(),
-      getVilles(),
-      getTypesRelation(language),
-    ])
-      .then(([a, b, c, d, typeElements, e, f, g, h]) => {
-        setSexes(a.data ?? []);
-        setStatuts(b.data ?? []);
-        setLiens(c.data ?? []);
-        setElements(d.data ?? []);
-        setTypesElement(typeElements.data ?? []);
-        setPays(e.data ?? []);
-        setRegions(f.data ?? []);
-        setVilles(g.data ?? []);
-        setTypes(h.data ?? []);
+    void loadPersonCoreReferences(language)
+      .then((references) => {
+        setSexes(references.sexes.data ?? []);
+        setStatuts(references.statuts.data ?? []);
+        setLiens(references.liens.data ?? []);
+        setElements(references.elements.data ?? []);
+        setTypesElement(references.typesElement.data ?? []);
+        setPays(references.pays.data ?? []);
+        setRegions(references.regions.data ?? []);
+        setVilles(references.villes.data ?? []);
+        setTypes(references.relationTypes.data ?? []);
       })
       .catch(() => undefined);
   }, [language]);
   useEffect(() => {
-    void Promise.all([
-      getDomainesActivite(),
-      getActivites(),
-      getCompetences(),
-      getCentresInteret(),
-    ])
-      .then(([a, b, c, d]) => {
-        setDomains(a.data ?? []);
-        setActivities(b.data ?? []);
-        setSkills(c.data ?? []);
-        setInterests(d.data ?? []);
+    void loadPersonCatalogReferences()
+      .then((references) => {
+        setDomains(references.domains.data ?? []);
+        setActivities(references.activities.data ?? []);
+        setSkills(references.competences.data ?? []);
+        setInterests(references.centres.data ?? []);
       })
       .catch(() => undefined);
   }, []);

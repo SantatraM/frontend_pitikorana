@@ -3,6 +3,7 @@ import { Activity, BarChart3, ChevronLeft, ChevronRight, Folder, FolderPlus, Hea
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../api/apiClient'
 import { useLanguage } from '../../hooks/useLanguage'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import {
   createActivite,
   createCentreInteret,
@@ -54,6 +55,7 @@ export function ReferentielsPage() {
   const [domaineId, setDomaineId] = useState('')
   const [pages, setPages] = useState<Record<ReferentielKind, number>>(initialPageByKind)
   const [searches, setSearches] = useState<Record<ReferentielKind, string>>(initialSearchByKind)
+  const { startRequest, isCurrentRequest } = useLatestRequest()
 
   const fr = useMemo(() => langues.find((langue) => langue.code.toLowerCase() === 'fr') ?? langues[0] ?? null, [langues])
   const mg = useMemo(() => langues.find((langue) => langue.code.toLowerCase() === 'mg') ?? null, [langues])
@@ -68,21 +70,25 @@ export function ReferentielsPage() {
   const meta = referenceMeta[kind]
 
   async function load() {
-    setLoading(true)
-    setError(null)
+    const requestSequence = startRequest()
+    if (isCurrentRequest(requestSequence)) {
+      setLoading(true)
+      setError(null)
+    }
     try {
       const [languesResponse, domainesResponse, activitesResponse, competencesResponse, centresResponse] = await Promise.all([
         getLangues(), getDomainesActivite(), getActivites(), getCompetences(), getCentresInteret(),
       ])
+      if (!isCurrentRequest(requestSequence)) return
       setLangues(languesResponse.data ?? [])
       setDomaines(domainesResponse.data ?? [])
       setActivites(activitesResponse.data ?? [])
       setCompetences(competencesResponse.data ?? [])
       setCentres(centresResponse.data ?? [])
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
+      if (isCurrentRequest(requestSequence)) setError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
     } finally {
-      setLoading(false)
+      if (isCurrentRequest(requestSequence)) setLoading(false)
     }
   }
 
@@ -90,6 +96,50 @@ export function ReferentielsPage() {
     const timer = window.setTimeout(() => { void load() }, 0)
     return () => window.clearTimeout(timer)
   }, [])
+
+  async function refreshDomainesAndActivites() {
+    const requestSequence = startRequest()
+    try {
+      const [domainesResponse, activitesResponse] = await Promise.all([getDomainesActivite(), getActivites()])
+      if (!isCurrentRequest(requestSequence)) return
+      setDomaines(domainesResponse.data ?? [])
+      setActivites(activitesResponse.data ?? [])
+    } catch (caught) {
+      if (isCurrentRequest(requestSequence)) setError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
+    }
+  }
+
+  async function refreshActivites() {
+    const requestSequence = startRequest()
+    try {
+      const response = await getActivites()
+      if (isCurrentRequest(requestSequence)) setActivites(response.data ?? [])
+    } catch (caught) {
+      if (isCurrentRequest(requestSequence)) setError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
+    }
+  }
+
+  async function refreshCompetences() {
+    const requestSequence = startRequest()
+    try {
+      const response = await getCompetences()
+      if (isCurrentRequest(requestSequence)) setCompetences(response.data ?? [])
+    } catch (caught) {
+      if (isCurrentRequest(requestSequence)) setError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
+    }
+  }
+
+  async function refreshCentres() {
+    const requestSequence = startRequest()
+    try {
+      const response = await getCentresInteret()
+      if (isCurrentRequest(requestSequence)) setCentres(response.data ?? [])
+    } catch (caught) {
+      if (isCurrentRequest(requestSequence)) setError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
+    }
+  }
+
+  const refreshAfterMutation = () => kind === 'domaines' ? refreshDomainesAndActivites() : kind === 'activites' ? refreshActivites() : kind === 'competences' ? refreshCompetences() : refreshCentres()
 
   function translation(entry: ReferentielEntry, code: string): string {
     return entry.traductions.find((item) => item.code_langue?.toLowerCase() === code)?.libelle
@@ -191,7 +241,7 @@ export function ReferentielsPage() {
       }
       setSuccess(t('admin.referencesSaved'))
       startCreate()
-      await load()
+      await refreshAfterMutation()
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('admin.referencesSaveError'))
     } finally {
@@ -217,7 +267,7 @@ export function ReferentielsPage() {
       else await deleteCentreInteret(entry.id)
       setSuccess(t('admin.referencesDeleted'))
       if (editing?.id === entry.id) startCreate()
-      await load()
+      await refreshAfterMutation()
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 500 && kind === 'domaines') setError(t('admin.domainDeleteBlocked'))
       else if (caught instanceof ApiError && caught.status === 500 && kind === 'activites') setError(t('admin.activityDeleteBlocked'))

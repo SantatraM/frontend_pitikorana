@@ -3,6 +3,7 @@ import { Ban, Pencil, Search, ShieldCheck, UserRoundCheck, X } from 'lucide-reac
 import { ApiError } from '../../api/apiClient'
 import { getUtilisateurs, updateUtilisateurRole, updateUtilisateurStatut, type Utilisateur } from '../../api/utilisateurs'
 import { useAuth } from '../../hooks/useAuth'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import './UtilisateursPage.css'
 
 const roles: Utilisateur['role']['code'][] = ['MEMBRE', 'PASTEUR', 'BUREAU_ZANAKA_AMPIELEZANA', 'ADMIN']
@@ -19,12 +20,14 @@ export function UtilisateursPage() {
   const [selectedStatut, setSelectedStatut] = useState<Utilisateur | null>(null)
   const [role, setRole] = useState<Utilisateur['role']['code']>('MEMBRE')
   const [busy, setBusy] = useState(false)
+  const { startRequest, isCurrentRequest } = useLatestRequest()
 
   const load = async () => {
-    setLoading(true); setError('')
-    try { setItems((await getUtilisateurs()).data ?? []) }
-    catch (caught) { setError(caught instanceof ApiError ? caught.message : 'Impossible de charger les utilisateurs.') }
-    finally { setLoading(false) }
+    const request = startRequest()
+    if (isCurrentRequest(request)) { setLoading(true); setError('') }
+    try { const response = await getUtilisateurs(); if (isCurrentRequest(request)) setItems(response.data ?? []) }
+    catch (caught) { if (isCurrentRequest(request)) setError(caught instanceof ApiError ? caught.message : 'Impossible de charger les utilisateurs.') }
+    finally { if (isCurrentRequest(request)) setLoading(false) }
   }
   useEffect(() => { void load() }, [])
 
@@ -37,7 +40,7 @@ export function UtilisateursPage() {
   const saveRole = async () => {
     if (!selectedRole) return
     setBusy(true); setError('')
-    try { await updateUtilisateurRole(selectedRole.id, role); setSelectedRole(null); await load() }
+    try { const response = await updateUtilisateurRole(selectedRole.id, role); const request = startRequest(); if (isCurrentRequest(request) && response.data) setItems((current) => current.map((item) => item.id === response.data.id ? response.data : item)); setSelectedRole(null) }
     catch (caught) { setError(caught instanceof ApiError ? caught.message : 'Impossible de modifier le rôle.') }
     finally { setBusy(false) }
   }
@@ -45,7 +48,7 @@ export function UtilisateursPage() {
     if (!selectedStatut) return
     setBusy(true); setError('')
     const next = selectedStatut.statut.code === 'ACTIF' ? 'SUSPENDU' : 'ACTIF'
-    try { await updateUtilisateurStatut(selectedStatut.id, next); setSelectedStatut(null); await load() }
+    try { const response = await updateUtilisateurStatut(selectedStatut.id, next); const request = startRequest(); if (isCurrentRequest(request) && response.data) setItems((current) => current.map((item) => item.id === response.data.id ? response.data : item)); setSelectedStatut(null) }
     catch (caught) { setError(caught instanceof ApiError ? caught.message : 'Impossible de modifier le statut.') }
     finally { setBusy(false) }
   }

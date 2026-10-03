@@ -7,6 +7,7 @@ import { getElements, type ElementReference } from '../../api/referentielsInscri
 import { useAuth } from '../../hooks/useAuth'
 import { isBusinessManagerRole } from '../../types/auth'
 import { useLanguage } from '../../hooks/useLanguage'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import './AlahadinTaranaka.css'
 
 const formatDate = (value: string) => { const [a, m, j] = String(value).slice(0, 10).split('-'); return a && m && j ? `${j}/${m}/${a}` : value }
@@ -16,12 +17,14 @@ export function AlahadinTaranakaPage() {
   const [items, setItems] = useState<Journee[]>([]); const [elements, setElements] = useState<ElementReference[]>([])
   const [open, setOpen] = useState(false); const [date, setDate] = useState(''); const [obs, setObs] = useState(''); const [ids, setIds] = useState<string[]>([])
   const [err, setErr] = useState(''); const [modalErr, setModalErr] = useState(''); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false)
+  const { startRequest, isCurrentRequest } = useLatestRequest()
   const admin = isBusinessManagerRole(user?.compte.role)
   const errorMessage = (caught: unknown) => { const key = caught instanceof ApiError ? alahadinErrorKey(caught.response?.code) : undefined; return key ? t(key) : caught instanceof ApiError ? caught.message : t('alahadin.error') }
-  const load = async () => { setLoading(true); try { setItems((await getJournees()).data ?? []); setElements((await getElements()).data ?? []) } catch (caught) { setErr(errorMessage(caught)) } finally { setLoading(false) } }
+  const load = async () => { const request = startRequest(); if (isCurrentRequest(request)) { setLoading(true); setErr('') } try { const [journees, references] = await Promise.all([getJournees(), getElements()]); if (!isCurrentRequest(request)) return; setItems(journees.data ?? []); setElements(references.data ?? []) } catch (caught) { if (isCurrentRequest(request)) setErr(errorMessage(caught)) } finally { if (isCurrentRequest(request)) setLoading(false) } }
+  const refreshJournees = async () => { const request = startRequest(); if (isCurrentRequest(request)) { setLoading(true); setErr('') } try { const response = await getJournees(); if (isCurrentRequest(request)) setItems(response.data ?? []) } catch (caught) { if (isCurrentRequest(request)) setErr(errorMessage(caught)) } finally { if (isCurrentRequest(request)) setLoading(false) } }
   useEffect(() => { void load() }, [])
   const tar = elements.filter(element => element.type_element?.code === 'TARANAKA')
-  const save = async (event: React.FormEvent) => { event.preventDefault(); setModalErr(''); if (!date || !ids.length) { setModalErr(t('alahadin.required')); return } setSaving(true); try { await createJournee({ date_journee: date, observation: obs || null, id_taranaka: ids }); setOpen(false); setDate(''); setObs(''); setIds([]); await load() } catch (caught) { setModalErr(errorMessage(caught)) } finally { setSaving(false) } }
+  const save = async (event: React.FormEvent) => { event.preventDefault(); setModalErr(''); if (!date || !ids.length) { setModalErr(t('alahadin.required')); return } setSaving(true); try { await createJournee({ date_journee: date, observation: obs || null, id_taranaka: ids }); setOpen(false); setDate(''); setObs(''); setIds([]); await refreshJournees() } catch (caught) { setModalErr(errorMessage(caught)) } finally { setSaving(false) } }
 
   return <section className="alahadin-page alahadin-list-page">
     <header className="alahadin-head alahadin-list-head"><div><h1>{t('alahadin.title')}</h1><p>{t('alahadin.subtitle')}</p></div>{admin && <button className="primary" onClick={() => setOpen(true)}><CalendarPlus size={17}/>{t('alahadin.new')}</button>}</header>

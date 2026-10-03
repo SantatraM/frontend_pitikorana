@@ -8,6 +8,7 @@ import { getProfilPersonne } from '../../api/personnes'
 import { getElements, getLiensFalimanjaka, getSexes, getStatuts, getVilles, type ElementReference, type LienReference, type SexeReference, type StatutReference, type VilleReference } from '../../api/referentielsInscription'
 import { useLanguage } from '../../hooks/useLanguage'
 import { useAuth } from '../../hooks/useAuth'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import type { Activite, CentreInteret, Competence } from '../../types/adminReferentiels'
 import type { AdminDemandeInscription, StatutDemandeInscription } from '../../types/demandeInscription'
 import type { ProfilPersonne } from '../../types/profil'
@@ -40,25 +41,44 @@ export function DemandeInscriptionDetailPage() {
   const [comment, setComment] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmation, setConfirmation] = useState<ConfirmationAction>(null)
+  const { startRequest, isCurrentRequest } = useLatestRequest()
 
   const load = async () => {
-    setLoading(true); setError(null); setProfile(null); setProfileError(null); setReferences(emptyReferences); setReferencesError(null)
+    const requestSequence = startRequest()
+    if (isCurrentRequest(requestSequence)) {
+      setLoading(true); setError(null); setProfile(null); setProfileError(null); setReferences(emptyReferences); setReferencesError(null)
+    }
     try {
       const response = await getDemandeInscription(id)
       const request = response.data ?? null
-      setDemande(request)
+      if (isCurrentRequest(requestSequence)) setDemande(request)
       if (!request) return
       if (request.id_personne) {
-        setProfileLoading(true)
-        try { const result = await getProfilPersonne(request.id_personne, language); setProfile(result.data ?? null) } catch (caught) { setProfileError(caught instanceof ApiError ? caught.message : t('admin.detailProfileError')) } finally { setProfileLoading(false) }
+        if (isCurrentRequest(requestSequence)) setProfileLoading(true)
+        try {
+          const result = await getProfilPersonne(request.id_personne, language)
+          if (isCurrentRequest(requestSequence)) setProfile(result.data ?? null)
+        } catch (caught) {
+          if (isCurrentRequest(requestSequence)) setProfileError(caught instanceof ApiError ? caught.message : t('admin.detailProfileError'))
+        } finally {
+          if (isCurrentRequest(requestSequence)) setProfileLoading(false)
+        }
       } else {
-        setReferencesLoading(true)
+        if (isCurrentRequest(requestSequence)) setReferencesLoading(true)
         try {
           const [sexes, statuts, liens, elements, villes, activites, competences, centres] = await Promise.all([getSexes(), getStatuts(), getLiensFalimanjaka(), getElements(), getVilles(), getActivites(), getCompetences(), getCentresInteret()])
-          setReferences({ sexes: sexes.data ?? [], statuts: statuts.data ?? [], liens: liens.data ?? [], elements: elements.data ?? [], villes: villes.data ?? [], activites: activites.data ?? [], competences: competences.data ?? [], centres: centres.data ?? [] })
-        } catch (caught) { setReferencesError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError')) } finally { setReferencesLoading(false) }
+          if (isCurrentRequest(requestSequence)) setReferences({ sexes: sexes.data ?? [], statuts: statuts.data ?? [], liens: liens.data ?? [], elements: elements.data ?? [], villes: villes.data ?? [], activites: activites.data ?? [], competences: competences.data ?? [], centres: centres.data ?? [] })
+        } catch (caught) {
+          if (isCurrentRequest(requestSequence)) setReferencesError(caught instanceof ApiError ? caught.message : t('admin.referencesLoadError'))
+        } finally {
+          if (isCurrentRequest(requestSequence)) setReferencesLoading(false)
+        }
       }
-    } catch (caught) { setError(caught instanceof ApiError ? caught.message : t('admin.requestLoadError')) } finally { setLoading(false) }
+    } catch (caught) {
+      if (isCurrentRequest(requestSequence)) setError(caught instanceof ApiError ? caught.message : t('admin.requestLoadError'))
+    } finally {
+      if (isCurrentRequest(requestSequence)) setLoading(false)
+    }
   }
   useEffect(() => { void load() }, [id, language])
 

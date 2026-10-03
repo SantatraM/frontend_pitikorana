@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '../../api/apiClient'
 import { getDemandesInscription } from '../../api/demandesInscription'
 import { useLanguage } from '../../hooks/useLanguage'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import type { AdminDemandeInscription, StatutDemandeInscription } from '../../types/demandeInscription'
 
 const PAGE_SIZE = 10
+const REQUESTS_LOAD_ERROR = 'REQUESTS_LOAD_ERROR'
 const filters: Array<'TOUTES' | StatutDemandeInscription> = ['TOUTES', 'EN_ATTENTE', 'VALIDEE', 'REFUSEE', 'ANNULEE']
 
 function statusText(status: 'TOUTES' | StatutDemandeInscription, t: ReturnType<typeof useLanguage>['t']) {
@@ -28,13 +30,16 @@ export function DemandesInscriptionPage() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { startRequest, isCurrentRequest } = useLatestRequest()
 
   useEffect(() => {
+    const request = startRequest()
+    if (isCurrentRequest(request)) { setLoading(true); setError(null) }
     void getDemandesInscription()
-      .then((response) => setItems(response.data ?? []))
-      .catch((caught) => setError(caught instanceof ApiError ? caught.message : t('admin.requestsLoadError')))
-      .finally(() => setLoading(false))
-  }, [t])
+      .then((response) => { if (isCurrentRequest(request)) setItems(response.data ?? []) })
+      .catch((caught) => { if (isCurrentRequest(request)) setError(caught instanceof ApiError ? caught.message : REQUESTS_LOAD_ERROR) })
+      .finally(() => { if (isCurrentRequest(request)) setLoading(false) })
+  }, [isCurrentRequest, startRequest])
 
   useEffect(() => setPage(1), [filter, query])
 
@@ -69,7 +74,7 @@ export function DemandesInscriptionPage() {
     <header className="admin-page-heading admin-requests-heading">
       <div><h2>{t('admin.requests')}</h2><span>{t('admin.requestsSubtitle')}</span></div>
     </header>
-    {error && <p className="form-error" role="alert">{error}</p>}
+    {error && <p className="form-error" role="alert">{error === REQUESTS_LOAD_ERROR ? t('admin.requestsLoadError') : error}</p>}
     <div className="admin-request-stats" aria-label={t('admin.requests')}>
       {(['EN_ATTENTE', 'VALIDEE', 'REFUSEE', 'ANNULEE'] as const).map((status) => <article key={status} className={`admin-request-stat admin-request-stat-${status}`}><span>{statusText(status, t)}</span><strong>{counts[status]}</strong></article>)}
     </div>

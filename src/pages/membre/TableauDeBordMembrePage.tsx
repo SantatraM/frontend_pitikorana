@@ -5,23 +5,25 @@ import { getPersonnes, getProfilPersonne } from '../../api/personnes'
 import { getElements, type ElementReference } from '../../api/referentielsInscription'
 import { useAuth } from '../../hooks/useAuth'
 import { useLanguage } from '../../hooks/useLanguage'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import type { ProfilPersonne } from '../../types/profil'
 
 type Overview = { people: number | null; razambe: number | null; taranaka: number | null; sampana: number | null }
 
 const emptyOverview: Overview = { people: null, razambe: null, taranaka: null, sampana: null }
 const initialsFor = (prenom: string | null | undefined, nom: string | undefined) => [prenom, nom].filter(Boolean).map((value) => value?.slice(0, 1)).join('').toUpperCase() || 'M'
-const isType = (element: ElementReference, type: string) => element.type_element?.libelle?.trim().toUpperCase() === type
+const isType = (element: ElementReference, type: string) => element.type_element?.code === type
 
 export function TableauDeBordMembrePage() {
   const { user } = useAuth()
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const [profile, setProfile] = useState<ProfilPersonne | null>(null)
   const [overview, setOverview] = useState<Overview>(emptyOverview)
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileError, setProfileError] = useState(false)
   const [overviewError, setOverviewError] = useState(false)
   const personId = user?.personne.id
+  const { startRequest, isCurrentRequest } = useLatestRequest()
 
   useEffect(() => {
     if (!personId) {
@@ -30,18 +32,19 @@ export function TableauDeBordMembrePage() {
       return
     }
 
-    let active = true
+    const request = startRequest()
+    if (!isCurrentRequest(request)) return
     setProfileLoading(true)
     setProfileError(false)
     setOverviewError(false)
     setOverview(emptyOverview)
 
     void Promise.allSettled([
-      getProfilPersonne(personId, language),
-      getPersonnes(language),
+      getProfilPersonne(personId),
+      getPersonnes(),
       getElements(),
     ]).then(([profileResult, peopleResult, elementsResult]) => {
-      if (!active) return
+      if (!isCurrentRequest(request)) return
 
       if (profileResult.status === 'fulfilled') {
         setProfile(profileResult.value.data ?? null)
@@ -68,8 +71,7 @@ export function TableauDeBordMembrePage() {
       setProfileLoading(false)
     })
 
-    return () => { active = false }
-  }, [personId, language])
+  }, [isCurrentRequest, personId, startRequest])
 
   const person = profile?.personne
   const firstName = person?.prenom || person?.nom || user?.personne.prenom || user?.personne.nom || t('member.member')

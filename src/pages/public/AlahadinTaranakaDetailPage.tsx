@@ -7,6 +7,7 @@ import { getElements, type ElementReference } from '../../api/referentielsInscri
 import { rechercherPersonnesInscription } from '../../api/demandesInscription'
 import { useAuth } from '../../hooks/useAuth'
 import { useLanguage } from '../../hooks/useLanguage'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
 import type { Translator } from '../../i18n/types'
 import { isBusinessManagerRole } from '../../types/auth'
 import './AlahadinTaranaka.css'
@@ -52,21 +53,73 @@ export function AlahadinTaranakaDetailPage() {
   const [tab, setTab] = useState<'dons' | 'stats'>('dons'); const [error, setError] = useState(''); const [warning, setWarning] = useState(''); const [modalOpen, setModalOpen] = useState(false); const [editing, setEditing] = useState<Don | null>(null); const [form, setForm] = useState<DonPayload>(emptyDon())
   const [personQuery, setPersonQuery] = useState(''); const [personResults, setPersonResults] = useState<PersonChoice[]>([]); const [selectedPerson, setSelectedPerson] = useState<PersonChoice | null>(null); const [persistentFoyer, setPersistentFoyer] = useState<FoyerPersistant | null>(null); const [personLoading, setPersonLoading] = useState(false); const [personError, setPersonError] = useState('')
   const [cancelDon, setCancelDon] = useState<Don | null>(null); const [cancelReason, setCancelReason] = useState(''); const [modalError, setModalError] = useState(''); const [cancelError, setCancelError] = useState(''); const [transitioning, setTransitioning] = useState(false); const transitionInProgress = useRef(false)
+  const { startRequest, isCurrentRequest } = useLatestRequest()
+  const { startRequest: startPersonSearch, isCurrentRequest: isCurrentPersonSearch } = useLatestRequest()
+  const { startRequest: startFoyerLoad, isCurrentRequest: isCurrentFoyerLoad } = useLatestRequest()
+  const personSearchTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const clearPersonSearch = () => {
+    const request = startPersonSearch()
+    if (personSearchTimer.current) window.clearTimeout(personSearchTimer.current)
+    personSearchTimer.current = null
+    if (isCurrentPersonSearch(request)) { setPersonResults([]); setPersonLoading(false); setPersonError('') }
+  }
+  const invalidateFoyerLoad = () => {
+    const request = startFoyerLoad()
+    if (isCurrentFoyerLoad(request)) setPersistentFoyer(null)
+  }
+  useEffect(() => () => {
+    if (personSearchTimer.current) window.clearTimeout(personSearchTimer.current)
+  }, [])
   const admin = isBusinessManagerRole(user?.compte.role)
   const currentLanguage: Language = language === 'mg' ? 'mg' : 'fr'
-  const load = async () => { try { setError(''); const [a, b, c, e] = await Promise.all([getJournee(id), getDons(id), getStatistiques(id), getElements()]); setJournee(a.data ?? null); setDons(b.data ?? []); setStats(c.data); setElements(e.data ?? []) } catch (caught) { setError(errorMessage(caught, t)) } }
+  const load = async () => {
+    const request = startRequest()
+    if (isCurrentRequest(request)) setError('')
+    try {
+      const [a, b, c, e] = await Promise.all([getJournee(id), getDons(id), getStatistiques(id), getElements()])
+      if (!isCurrentRequest(request)) return
+      setJournee(a.data ?? null)
+      setDons(b.data ?? [])
+      setStats(c.data)
+      setElements(e.data ?? [])
+    } catch (caught) {
+      if (isCurrentRequest(request)) setError(errorMessage(caught, t))
+    }
+  }
+  const refreshJournee = async () => {
+    const request = startRequest()
+    if (isCurrentRequest(request)) setError('')
+    try {
+      const response = await getJournee(id)
+      if (isCurrentRequest(request)) setJournee(response.data ?? null)
+    } catch (caught) {
+      if (isCurrentRequest(request)) setError(errorMessage(caught, t))
+    }
+  }
+  const refreshDonsAndStatistics = async () => {
+    const request = startRequest()
+    if (isCurrentRequest(request)) setError('')
+    try {
+      const [donsResponse, statisticsResponse] = await Promise.all([getDons(id), getStatistiques(id)])
+      if (!isCurrentRequest(request)) return
+      setDons(donsResponse.data ?? [])
+      setStats(statisticsResponse.data)
+    } catch (caught) {
+      if (isCurrentRequest(request)) setError(errorMessage(caught, t))
+    }
+  }
   useEffect(() => { void load() }, [id])
   const taranaka = journee?.taranaka ?? []
   const sampana = useMemo(() => elements.filter(element => element.type_element?.code === 'SAMPANA' && !!element.parent && taranaka.some(parent => parent.id === element.parent?.id)), [elements, taranaka])
-  const resetDonor = (type_donateur: TypeDonateur) => { setForm(current => ({ ...emptyDon(type_donateur), type_don: current.type_don })); setPersonQuery(''); setPersonResults([]); setSelectedPerson(null); setPersistentFoyer(null); setPersonError('') }
+  const resetDonor = (type_donateur: TypeDonateur) => { clearPersonSearch(); invalidateFoyerLoad(); setForm(current => ({ ...emptyDon(type_donateur), type_don: current.type_don })); setPersonQuery(''); setSelectedPerson(null) }
   const openCreate = () => { setEditing(null); setForm(emptyDon()); setWarning(''); setModalError(''); resetDonor('TARANAKA'); setModalOpen(true) }
-  const openEdit = (don: Don) => { const next: DonPayload = { type_donateur: don.type_donateur, id_donateur: don.donateur.id, type_don: don.type_don, observation: don.observation ?? '' }; if (don.type_don === 'ARGENT') { next.montant = don.montant ?? ''; next.devise = don.devise ?? 'MGA' } else { next.designation = don.designation ?? ''; next.quantite = don.quantite ?? ''; next.unite = don.unite ?? '' }; setEditing(don); setForm(next); setWarning(''); setModalError(''); setPersonQuery(''); setPersonResults([]); setPersonError(''); setPersistentFoyer(null); setSelectedPerson(don.type_donateur === 'PERSONNE' ? { id: don.donateur.id, nom: don.donateur.nom ?? '', prenom: don.donateur.prenom } : null); setModalOpen(true) }
-  const closeModal = () => { setModalError(''); setModalOpen(false); setEditing(null); setPersonResults([]); setSelectedPerson(null); setPersistentFoyer(null) }
-  const searchPeople = async (query: string) => { setPersonQuery(query); setPersonError(''); if (query.trim().length < 2) { setPersonResults([]); return } try { setPersonLoading(true); const response = await rechercherPersonnesInscription(query.trim()); setPersonResults((response.data ?? []) as PersonChoice[]) } catch (caught) { setPersonResults([]); setPersonError(errorMessage(caught, t)) } finally { setPersonLoading(false) } }
-  const choosePerson = async (person: PersonChoice) => { setSelectedPerson(person); setPersonResults([]); setPersonError(''); if (form.type_donateur === 'PERSONNE') { setForm(current => ({ ...current, id_donateur: person.id })); return } try { setPersonLoading(true); const response = await getFoyerPersistant(person.id); const foyer = response.data ?? null; setPersistentFoyer(foyer); setForm(current => ({ ...current, id_donateur: foyer?.id ?? '' })); if (!foyer) setPersonError(t('alahadin.noFoyer')) } catch (caught) { setPersistentFoyer(null); setForm(current => ({ ...current, id_donateur: '' })); setPersonError(errorMessage(caught, t)) } finally { setPersonLoading(false) } }
-  const submit = async (event: React.FormEvent) => { event.preventDefault(); try { setModalError(''); const payload: DonPayload = form.type_don === 'ARGENT' ? { type_donateur: form.type_donateur, id_donateur: form.id_donateur, type_don: 'ARGENT', montant: form.montant, devise: form.devise, observation: form.observation } : { type_donateur: form.type_donateur, id_donateur: form.id_donateur, type_don: 'MATERIEL', designation: form.designation, quantite: form.quantite, unite: form.unite, observation: form.observation }; const response = editing ? await updateDon(id, editing.id, payload) : await createDon(id, payload); const warnings = (response.data as any)?.warnings ?? (response as any).warnings ?? []; if (warnings.some((item: any) => item.code === 'TARANAKA_NOT_DETERMINED')) setWarning(t('alahadin.warningTaranakaNotDetermined')); closeModal(); await load() } catch (caught) { setModalError(errorMessage(caught, t)) } }
-  const cancel = async () => { if (!cancelDon || !cancelReason.trim()) return; try { setCancelError(''); await annulerDon(id, cancelDon.id, cancelReason.trim()); setCancelDon(null); setCancelReason(''); await load() } catch (caught) { setCancelError(errorMessage(caught, t)) } }
-  const transition = async (action: () => Promise<unknown>) => { if (transitionInProgress.current) return; transitionInProgress.current = true; setTransitioning(true); try { setError(''); await action(); await load() } catch (caught) { setError(errorMessage(caught, t)) } finally { transitionInProgress.current = false; setTransitioning(false) } }
+  const openEdit = (don: Don) => { clearPersonSearch(); invalidateFoyerLoad(); const next: DonPayload = { type_donateur: don.type_donateur, id_donateur: don.donateur.id, type_don: don.type_don, observation: don.observation ?? '' }; if (don.type_don === 'ARGENT') { next.montant = don.montant ?? ''; next.devise = don.devise ?? 'MGA' } else { next.designation = don.designation ?? ''; next.quantite = don.quantite ?? ''; next.unite = don.unite ?? '' }; setEditing(don); setForm(next); setWarning(''); setModalError(''); setPersonQuery(''); setSelectedPerson(don.type_donateur === 'PERSONNE' ? { id: don.donateur.id, nom: don.donateur.nom ?? '', prenom: don.donateur.prenom } : null); setModalOpen(true) }
+  const closeModal = () => { clearPersonSearch(); invalidateFoyerLoad(); setModalError(''); setModalOpen(false); setEditing(null); setSelectedPerson(null) }
+  const searchPeople = (query: string) => { setPersonQuery(query); const request = startPersonSearch(); if (personSearchTimer.current) window.clearTimeout(personSearchTimer.current); personSearchTimer.current = null; if (query.trim().length < 2) { if (isCurrentPersonSearch(request)) { setPersonResults([]); setPersonLoading(false); setPersonError('') } return } if (isCurrentPersonSearch(request)) setPersonError(''); personSearchTimer.current = window.setTimeout(() => { void (async () => { if (!isCurrentPersonSearch(request)) return; setPersonLoading(true); try { const response = await rechercherPersonnesInscription(query.trim()); if (isCurrentPersonSearch(request)) setPersonResults((response.data ?? []) as PersonChoice[]) } catch (caught) { if (isCurrentPersonSearch(request)) { setPersonResults([]); setPersonError(errorMessage(caught, t)) } } finally { if (isCurrentPersonSearch(request)) setPersonLoading(false) } })() }, 350) }
+  const choosePerson = async (person: PersonChoice) => { clearPersonSearch(); const request = startFoyerLoad(); if (isCurrentFoyerLoad(request)) setPersistentFoyer(null); setSelectedPerson(person); if (form.type_donateur === 'PERSONNE') { setForm(current => ({ ...current, id_donateur: person.id })); return } if (isCurrentFoyerLoad(request)) setPersonLoading(true); try { const response = await getFoyerPersistant(person.id); const foyer = response.data ?? null; if (!isCurrentFoyerLoad(request)) return; setPersistentFoyer(foyer); setForm(current => ({ ...current, id_donateur: foyer?.id ?? '' })); if (!foyer) setPersonError(t('alahadin.noFoyer')) } catch (caught) { if (!isCurrentFoyerLoad(request)) return; setPersistentFoyer(null); setForm(current => ({ ...current, id_donateur: '' })); setPersonError(errorMessage(caught, t)) } finally { if (isCurrentFoyerLoad(request)) setPersonLoading(false) } }
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); try { setModalError(''); const payload: DonPayload = form.type_don === 'ARGENT' ? { type_donateur: form.type_donateur, id_donateur: form.id_donateur, type_don: 'ARGENT', montant: form.montant, devise: form.devise, observation: form.observation } : { type_donateur: form.type_donateur, id_donateur: form.id_donateur, type_don: 'MATERIEL', designation: form.designation, quantite: form.quantite, unite: form.unite, observation: form.observation }; const response = editing ? await updateDon(id, editing.id, payload) : await createDon(id, payload); const warnings = (response.data as any)?.warnings ?? (response as any).warnings ?? []; if (warnings.some((item: any) => item.code === 'TARANAKA_NOT_DETERMINED')) setWarning(t('alahadin.warningTaranakaNotDetermined')); closeModal(); await refreshDonsAndStatistics() } catch (caught) { setModalError(errorMessage(caught, t)) } }
+  const cancel = async () => { if (!cancelDon || !cancelReason.trim()) return; try { setCancelError(''); await annulerDon(id, cancelDon.id, cancelReason.trim()); setCancelDon(null); setCancelReason(''); await refreshDonsAndStatistics() } catch (caught) { setCancelError(errorMessage(caught, t)) } }
+  const transition = async (action: () => Promise<unknown>) => { if (transitionInProgress.current) return; transitionInProgress.current = true; setTransitioning(true); try { setError(''); await action(); await refreshJournee() } catch (caught) { setError(errorMessage(caught, t)) } finally { transitionInProgress.current = false; setTransitioning(false) } }
 
   if (!journee) return <p className="auth-loading">{error || t('alahadin.loading')}</p>
   const statsRows = [...(stats?.argent?.par_taranaka ?? []), ...(stats?.argent?.sans_taranaka ?? [])]
