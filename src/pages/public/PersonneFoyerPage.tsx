@@ -62,7 +62,7 @@ export function PersonneFoyerPage() {
 
       <section className="foyer-section">
         <header><span><Home size={20} aria-hidden="true" /></span><div><h2>{t('admin.personEdit.foyerFormedTitle')}</h2><p>{t('admin.personEdit.foyerFormedSubtitle')}</p></div></header>
-        {!formed ? <div className="foyer-empty"><strong>{t('admin.personEdit.foyerFormedAbsent')}</strong><p>{t('admin.personEdit.foyerFormedAbsentHelp')}</p></div> : <div className="foyer-structure"><Couple first={formed.personne} second={formed.conjoint} currentId={foyer.personne.id} /><span className="foyer-stem" aria-hidden="true" /><Children people={formed.enfants} currentId={foyer.personne.id} /></div>}
+        {!formed ? <div className="foyer-empty"><strong>{t('admin.personEdit.foyerFormedAbsent')}</strong><p>{t('admin.personEdit.foyerFormedAbsentHelp')}</p></div> : <div className="foyer-structure">{formed.type_foyer === 'COUPLE' && formed.conjoint ? <Couple first={formed.personne} second={formed.conjoint} currentId={foyer.personne.id} /> : <FoyerPersonCard person={formed.personne} current={formed.personne.id === foyer.personne.id} />}<span className="foyer-stem" aria-hidden="true" /><Children people={formed.enfants} currentId={foyer.personne.id} /></div>}
       </section>
     </div>
   </section>

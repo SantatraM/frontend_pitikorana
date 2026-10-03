@@ -35,9 +35,10 @@ export interface FoyerOrigine {
 
 export interface FoyerForme {
   statut: 'COMPLET'
+  type_foyer: 'COUPLE' | 'MONOPARENTAL'
   identite: FoyerIdentity
   personne: GenealogyPerson
-  conjoint: GenealogyPerson
+  conjoint: GenealogyPerson | null
   enfants: GenealogyPerson[]
 }
 
