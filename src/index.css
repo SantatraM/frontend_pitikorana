@@ -6359,3 +6359,41 @@ button:focus-visible {
   .registration-photo-actions { flex: 1 1 0; }
   .request-detail-header > .request-detail-photo { order: 0; }
 }
+.registration-new-form .registration-origin {
+  display: grid;
+  gap: 12px;
+}
+.registration-origin-intro { margin: -4px 0 2px; color: var(--text-muted, #64748b); font-size: .9rem; line-height: 1.45; }
+.registration-origin-grid { display: grid; gap: 0; }
+.registration-origin-level { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 8px 0 14px; }
+.registration-origin-level + .registration-origin-level { padding-top: 14px; border-top: 1px solid #e6edf5; }
+.registration-origin-step { display: grid; justify-items: center; position: relative; }
+.registration-origin-step span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: #eaf3ff; color: #075eb8; font-weight: 700; font-size: .82rem; }
+.registration-origin-level:not(:last-child) .registration-origin-step i { width: 1px; flex: 1; margin-top: 5px; background: #cbddec; }
+.registration-origin-content { min-width: 0; display: grid; gap: 7px; }
+.registration-origin-content > label { display: grid; gap: 5px; color: #123b69; font-weight: 700; font-size: .9rem; }
+.registration-origin-content select, .registration-origin-entry input { width: 100%; min-height: 42px; }
+.registration-origin-help { margin: 0; color: #71839a; font-size: .82rem; }
+.registration-origin-link { justify-self: start; border: 0; padding: 0; background: transparent; color: #0874e8; font: inherit; font-size: .86rem; font-weight: 700; cursor: pointer; }
+.registration-origin-link:disabled { color: #9aaabd; cursor: not-allowed; }
+.registration-origin-entry, .registration-origin-selected { border: 1px solid #d8e5f2; border-radius: 8px; background: #f8fbff; padding: 10px; }
+.registration-origin-entry { display: grid; gap: 8px; }
+.registration-origin-entry p, .registration-origin-entry label { margin: 0; color: #61758f; font-size: .84rem; }
+.registration-origin-entry label { display: grid; gap: 5px; color: #123b69; font-weight: 700; }
+.registration-origin-entry > div { display: flex; justify-content: flex-end; gap: 8px; }
+.registration-origin-entry button, .registration-origin-selected button { min-height: 32px; padding: 5px 10px; border-radius: 6px; font-size: .82rem; }
+.registration-origin-selected { display: flex; justify-content: space-between; align-items: start; gap: 10px; border-color: #b9d7f5; background: #eff7ff; }
+.registration-origin-selected div { display: grid; gap: 3px; min-width: 0; }
+.registration-origin-selected strong { color: #082e68; overflow-wrap: anywhere; }
+.registration-origin-selected span { color: #08783f; font-size: .78rem; font-weight: 700; }
+.registration-origin-selected.is-proposed span { color: #9a6500; }
+.registration-origin-selected small { color: #657b99; font-size: .76rem; }
+.registration-origin-summary { border-top: 1px solid #d8e5f2; padding-top: 12px; }
+.registration-origin-summary > strong { color: #082e68; font-size: .9rem; }
+.registration-origin-summary > div { display: grid; gap: 3px; margin-top: 8px; }
+.registration-origin-summary > div > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; align-items: center; }
+.registration-origin-summary span { color: #123b69; font-weight: 700; overflow-wrap: anywhere; }
+.registration-origin-summary small { color: #657b99; font-size: .76rem; }
+.registration-origin-summary i { grid-column: 1 / -1; color: #7aa7d6; font-style: normal; line-height: 1; }
+.registration-origin-content select:focus-visible, .registration-origin-entry input:focus-visible, .registration-origin button:focus-visible { outline: 3px solid rgba(8,116,232,.24); outline-offset: 2px; }
+@media (max-width: 560px) { .registration-origin-level { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; } .registration-origin-entry > div { justify-content: stretch; } .registration-origin-entry > div button { flex: 1; } .registration-origin-selected { flex-direction: column; } }
