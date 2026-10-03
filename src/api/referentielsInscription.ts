@@ -1,6 +1,6 @@
 import { apiClient } from './apiClient'
 import type { ApiSuccess } from '../types/api'
-export interface Traduction { libelle:string; langue?:{code:string}|null }
+export interface Traduction { libelle:string; code_langue?:string; langue?:{code:string}|null }
 export interface SexeReference { id:string; code:string; traductions:Traduction[] }
 export interface LienReference { id:string; traductions:Traduction[] }
 export interface StatutReference { id:string; code?:string; traductions:Traduction[] }
@@ -9,7 +9,7 @@ export interface ElementReference { id:string; nom:string; id_type_element:strin
 export interface PaysReference { id:string; nom:string }
 export interface RegionReference { id:string; nom:string; id_pays:string; pays:PaysReference|null }
 export interface VilleReference { id:string; nom:string; id_region:string; region:RegionReference|null }
-type Raw=Record<string,unknown>;const record=(v:unknown):Raw=>v&&typeof v==='object'&&!Array.isArray(v)?v as Raw:{};const str=(v:unknown)=>typeof v==='string'?v:'';const rawId=(x:Raw)=>str(x.id??x._id);const translations=(x:Raw):Traduction[]=>{const list=x.traductions??x._traductions;return Array.isArray(list)?list.map(item=>{const r=record(item);const l=record(r.langue??r._langue);return {libelle:str(r.libelle??r._libelle),langue:l?{code:str(l.code??l._code)}:null}}):[]};const success=<T>(data:T):ApiSuccess<T>=>({success:true,data});
+type Raw=Record<string,unknown>;const record=(v:unknown):Raw=>v&&typeof v==='object'&&!Array.isArray(v)?v as Raw:{};const str=(v:unknown)=>typeof v==='string'?v:'';const rawId=(x:Raw)=>str(x.id??x._id);const translations=(x:Raw):Traduction[]=>{const list=x.traductions??x._traductions;return Array.isArray(list)?list.map(item=>{const r=record(item);const l=record(r.langue??r._langue);const code_langue=str(r.code_langue??r._code_langue??l.code??l._code);return {libelle:str(r.libelle??r._libelle),code_langue:code_langue||undefined,langue:l?{code:str(l.code??l._code)}:null}}):[]};const success=<T>(data:T):ApiSuccess<T>=>({success:true,data});
 export async function getSexes(){const r=await apiClient<ApiSuccess<unknown[]>>('/api/sexes');return success((r.data??[]).map(v=>{const x=record(v);return{id:rawId(x),code:str(x.code??x._code),traductions:translations(x)}}))}
 export async function getStatuts(){const r=await apiClient<ApiSuccess<unknown[]>>('/api/statuts');return success((r.data??[]).map(v=>{const x=record(v);return{id:rawId(x),code:str(x.code??x._code),traductions:translations(x)}}))}
 export async function getLiensFalimanjaka(){const r=await apiClient<ApiSuccess<unknown[]>>('/api/liens-falimanjaka');return success((r.data??[]).map(v=>{const x=record(v);return{id:rawId(x),traductions:translations(x)}}))}
