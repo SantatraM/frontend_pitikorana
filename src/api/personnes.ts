@@ -40,7 +40,7 @@ export interface CreatePersonneCompletePayload {
     facebook?: string | null;
     lien_facebook?: string | null;
   }>;
-  relations?: Array<{ id_personne_liee: string; id_type_relation: string }>;
+  relations?: Array<{ id_personne_liee: string; id_type_relation: string; action?: "CONFIRMER_MANUELLE" | null }>;
   activites?: Array<{
     id_activite: string;
     lieu_travail: string | null;
