@@ -96,7 +96,7 @@ export function BrancheFamilialePage() {
   const people = peopleScope === 'DIRECT' ? directPeople : branchPeople
   const filteredPeople = useMemo(() => {
     const query = peopleSearch.trim().toLocaleLowerCase()
-    return people.filter((person) => !query || [person.nom, person.prenom].filter(Boolean).join(' ').toLocaleLowerCase().includes(query)).sort((first, second) => first.nom.localeCompare(second.nom) || (first.prenom ?? '').localeCompare(second.prenom ?? ''))
+    return people.filter((person) => !query || [person.nom, person.prenom, person.nom_usage, person.autres_appellations].filter(Boolean).join(' ').toLocaleLowerCase().includes(query)).sort((first, second) => first.nom.localeCompare(second.nom) || (first.prenom ?? '').localeCompare(second.prenom ?? ''))
   }, [people, peopleSearch])
   const peoplePageCount = Math.max(1, Math.ceil(filteredPeople.length / 20))
   const safePeoplePage = Math.min(peoplePage, peoplePageCount)
