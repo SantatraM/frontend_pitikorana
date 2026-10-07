@@ -28,6 +28,11 @@ import { BrancheFamilialePage } from '../pages/public/BrancheFamilialePage'
 import { BranchesFamilialesPage } from '../pages/public/BranchesFamilialesPage'
 import { AlahadinTaranakaPage } from '../pages/public/AlahadinTaranakaPage'
 import { AlahadinTaranakaDetailPage } from '../pages/public/AlahadinTaranakaDetailPage'
+import { SosoKevitraListPage } from '../pages/public/SosoKevitraListPage'
+import { MesSosoKevitraPage } from '../pages/public/MesSosoKevitraPage'
+import { SosoKevitraFormPage } from '../pages/public/SosoKevitraFormPage'
+import { SosoKevitraDetailPage } from '../pages/public/SosoKevitraDetailPage'
+import { SosoKevitraGestionPage } from '../pages/public/SosoKevitraGestionPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 import { useAuth } from '../hooks/useAuth'
@@ -55,6 +60,11 @@ export function AppRouter() {
         <Route path="personnes/:id" element={<PersonneProfilPage />} />
         <Route path="alahadin-taranaka" element={<AlahadinTaranakaPage />} />
         <Route path="alahadin-taranaka/:id" element={<AlahadinTaranakaDetailPage />} />
+        <Route path="soso-kevitra" element={<SosoKevitraListPage />} />
+        <Route path="soso-kevitra/mes" element={<MesSosoKevitraPage />} />
+        <Route path="soso-kevitra/nouveau" element={<SosoKevitraFormPage />} />
+        <Route path="soso-kevitra/:id/modifier" element={<SosoKevitraFormPage />} />
+        <Route path="soso-kevitra/a-traiter" element={<SosoKevitraGestionPage />} />`r`n        <Route path="soso-kevitra/:id" element={<SosoKevitraDetailPage />} />
         <Route path="branches" element={<BranchesFamilialesPage />} />
         <Route path="branches/:id_element" element={<BrancheFamilialePage />} />
         <Route path="personnes/nouvelle" element={<PersonneNouvellePage />} />

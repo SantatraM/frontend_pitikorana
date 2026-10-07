@@ -1,0 +1,21 @@
+import { useEffect, useMemo, useState } from 'react'
+import { CirclePlus, MessageCircle, SlidersHorizontal, Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { getSosoPublics } from '../../api/sosoKevitra'
+import { ApiError } from '../../api/apiClient'
+import { SosoCard, SosoPageHeading } from '../../components/sosoKevitra/SosoKevitraShared'
+import { useLanguage } from '../../hooks/useLanguage'
+import { useAuth } from '../../hooks/useAuth'
+import { isBusinessManagerRole } from '../../types/auth'
+import { useLatestRequest } from '../../hooks/useLatestRequest'
+import type { SosoKevitraStatusCode, SosoPublicItem } from '../../types/sosoKevitra'
+import './SosoKevitra.css'
+
+export function SosoKevitraListPage() {
+  const { language, t } = useLanguage(); const { user } = useAuth(); const manager = isBusinessManagerRole(user?.compte.role); const [items, setItems] = useState<SosoPublicItem[]>([]); const [query, setQuery] = useState(''); const [status, setStatus] = useState<'ALL' | SosoKevitraStatusCode>('ALL'); const [sort, setSort] = useState<'recent' | 'oldest'>('recent'); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const { startRequest, isCurrentRequest } = useLatestRequest()
+  const load = async () => { const request = startRequest(); if (isCurrentRequest(request)) { setLoading(true); setError('') } try { const response = await getSosoPublics(language); if (isCurrentRequest(request)) setItems(response.data ?? []) } catch (caught) { if (isCurrentRequest(request)) setError(caught instanceof ApiError ? caught.message : t('soso.loadError')) } finally { if (isCurrentRequest(request)) setLoading(false) } }
+  useEffect(() => { void load() }, [language])
+  const statuses = useMemo(() => Array.from(new Map(items.map(item => [item.statut_fonctionnel, item.statut.libelle || item.statut_fonctionnel])).entries()), [items])
+  const filtered = useMemo(() => items.filter(item => { const needle = query.trim().toLocaleLowerCase(); return (!needle || [item.titre, item.description, item.objectif, item.auteur.nom, item.auteur.prenom, item.auteur.nom_usage].filter(Boolean).join(' ').toLocaleLowerCase().includes(needle)) && (status === 'ALL' || item.statut_fonctionnel === status) }).sort((a, b) => sort === 'recent' ? (b.date_publication || '').localeCompare(a.date_publication || '') : (a.date_publication || '').localeCompare(b.date_publication || '')), [items, query, status, sort])
+  return <section className="soso-page"><SosoPageHeading title={t('soso.allTitle')} subtitle={t('soso.allSubtitle')}><Link className="primary soso-new" to="/soso-kevitra/nouveau"><CirclePlus size={18}/>{t('soso.new')}</Link></SosoPageHeading><div className="soso-tabs"><Link className="active" to="/soso-kevitra">{t('soso.all')}</Link><Link to="/soso-kevitra/mes">{t('soso.mine')}</Link>{manager && <Link to="/soso-kevitra/a-traiter">{language === 'fr' ? 'À traiter' : 'Hokarakaraina'}</Link>}</div><div className="soso-filters"><label><Search size={18}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder={t('soso.search')} aria-label={t('soso.search')} /></label><select value={status} onChange={event => setStatus(event.target.value as 'ALL' | SosoKevitraStatusCode)}><option value="ALL">{t('soso.allStatuses')}</option>{statuses.map(([code, label]) => <option value={code} key={code}>{label}</option>)}</select><select value={sort} onChange={event => setSort(event.target.value as 'recent' | 'oldest')} aria-label="Tri"><option value="recent">{language === 'fr' ? 'Plus récent' : 'Vaovao indrindra'}</option><option value="oldest">{language === 'fr' ? 'Plus ancien' : 'Tranainy indrindra'}</option></select><span className="soso-filter-icon"><SlidersHorizontal size={18}/></span></div>{error && <p className="form-error" role="alert">{error}</p>}{loading ? <p className="auth-loading">{t('soso.loading')}</p> : !filtered.length ? <section className="soso-empty"><MessageCircle size={31}/><h2>{t('soso.empty')}</h2><p>{t('soso.emptyHelp')}</p><Link className="primary" to="/soso-kevitra/nouveau"><CirclePlus size={17}/>{t('soso.new')}</Link></section> : <div className="soso-list">{filtered.map(item => <SosoCard key={item.id} item={item} language={language}/>)}</div>}</section>
+}

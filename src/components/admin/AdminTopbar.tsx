@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useLanguage } from '../../hooks/useLanguage'
 
 const titleFor = (pathname: string, t: ReturnType<typeof useLanguage>['t']) => {
+  if (pathname.startsWith('/soso-kevitra')) return t('soso.moduleName')
   if (pathname === '/admin') return t('admin.dashboard')
   if (pathname === '/admin/profil') return t('admin.myProfile')
   if (pathname === '/admin/profil/modifier') return t('admin.editPerson')
