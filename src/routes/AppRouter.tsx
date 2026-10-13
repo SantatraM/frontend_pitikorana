@@ -33,6 +33,8 @@ import { MesSosoKevitraPage } from '../pages/public/MesSosoKevitraPage'
 import { SosoKevitraFormPage } from '../pages/public/SosoKevitraFormPage'
 import { SosoKevitraDetailPage } from '../pages/public/SosoKevitraDetailPage'
 import { SosoKevitraGestionPage } from '../pages/public/SosoKevitraGestionPage'
+import { TetikasaDetailPage } from '../pages/public/TetikasaDetailPage'
+import { TetikasaEditPage } from '../pages/public/TetikasaEditPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 import { useAuth } from '../hooks/useAuth'
@@ -66,6 +68,8 @@ export function AppRouter() {
         <Route path="soso-kevitra/:id/modifier" element={<SosoKevitraFormPage />} />
         <Route path="soso-kevitra/a-traiter" element={<SosoKevitraGestionPage />} />`r`n        <Route path="soso-kevitra/:id" element={<SosoKevitraDetailPage />} />
         <Route path="branches" element={<BranchesFamilialesPage />} />
+        <Route path="tetikasa/:id" element={<TetikasaDetailPage />} />
+        <Route path="tetikasa/:id/modifier" element={<TetikasaEditPage />} />
         <Route path="branches/:id_element" element={<BrancheFamilialePage />} />
         <Route path="personnes/nouvelle" element={<PersonneNouvellePage />} />
         <Route path="personnes/:id/modifier" element={<PersonneModifierPage />} />
