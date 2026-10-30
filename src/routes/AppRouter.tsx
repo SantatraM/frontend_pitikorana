@@ -34,7 +34,14 @@ import { SosoKevitraFormPage } from '../pages/public/SosoKevitraFormPage'
 import { SosoKevitraDetailPage } from '../pages/public/SosoKevitraDetailPage'
 import { SosoKevitraGestionPage } from '../pages/public/SosoKevitraGestionPage'
 import { TetikasaDetailPage } from '../pages/public/TetikasaDetailPage'
+import { TetikasaListPage } from '../pages/public/TetikasaListPage'
+import { TetikasaCreatePage } from '../pages/public/TetikasaCreatePage'
 import { TetikasaEditPage } from '../pages/public/TetikasaEditPage'
+import { FandraisanAnjaraPage } from '../pages/public/FandraisanAnjaraPage'
+import { FandraisanAnjaraRazambeDetailPage } from '../pages/public/FandraisanAnjaraRazambeDetailPage'
+import { FandraisanAnjaraListPage } from '../pages/public/FandraisanAnjaraListPage'
+import { FandraisanAnjaraCreatePage } from '../pages/public/FandraisanAnjaraCreatePage'
+import { FandraisanAnjaraDetailPage } from '../pages/public/FandraisanAnjaraDetailPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 import { useAuth } from '../hooks/useAuth'
@@ -66,10 +73,19 @@ export function AppRouter() {
         <Route path="soso-kevitra/mes" element={<MesSosoKevitraPage />} />
         <Route path="soso-kevitra/nouveau" element={<SosoKevitraFormPage />} />
         <Route path="soso-kevitra/:id/modifier" element={<SosoKevitraFormPage />} />
-        <Route path="soso-kevitra/a-traiter" element={<SosoKevitraGestionPage />} />`r`n        <Route path="soso-kevitra/:id" element={<SosoKevitraDetailPage />} />
+        <Route path="soso-kevitra/a-traiter" element={<SosoKevitraGestionPage />} />
+        <Route path="soso-kevitra/:id" element={<SosoKevitraDetailPage />} />
         <Route path="branches" element={<BranchesFamilialesPage />} />
+        <Route path="tetikasa" element={<TetikasaListPage />} />
+        <Route element={<RoleRoute role={["ADMIN", "PASTEUR", "BUREAU_ZANAKA_AMPIELEZANA"]} />}><Route path="tetikasa/nouveau" element={<TetikasaCreatePage />} /></Route>
         <Route path="tetikasa/:id" element={<TetikasaDetailPage />} />
         <Route path="tetikasa/:id/modifier" element={<TetikasaEditPage />} />
+        <Route path="fandraisan-anjara" element={<FandraisanAnjaraPage />} />
+        <Route path="fandraisan-anjara/liste" element={<FandraisanAnjaraListPage />} />
+        <Route element={<RoleRoute role={["ADMIN", "PASTEUR", "BUREAU_ZANAKA_AMPIELEZANA"]} />}><Route path="fandraisan-anjara/nouvelle" element={<FandraisanAnjaraCreatePage />} /></Route>
+        <Route path="fandraisan-anjara/razambe/non-determine" element={<FandraisanAnjaraRazambeDetailPage nonDetermine />} />
+        <Route path="fandraisan-anjara/razambe/:id" element={<FandraisanAnjaraRazambeDetailPage />} />
+        <Route path="fandraisan-anjara/:id" element={<FandraisanAnjaraDetailPage />} />
         <Route path="branches/:id_element" element={<BrancheFamilialePage />} />
         <Route path="personnes/nouvelle" element={<PersonneNouvellePage />} />
         <Route path="personnes/:id/modifier" element={<PersonneModifierPage />} />

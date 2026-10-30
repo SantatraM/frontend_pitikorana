@@ -7,10 +7,10 @@ type Props = { onNavigate?: () => void }
 
 export function AdminSidebar({ onNavigate }: Props) {
   const { logout, user } = useAuth()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const navigate = useNavigate()
   const links = [
-    ['/admin', 'dashboard', t('admin.dashboard')], ['/personnes', 'people', t('admin.people')], ['/branches', 'branches', t('admin.familyBranch')], ['/admin/demandes-inscription', 'requests', t('admin.requests')], ...(user?.compte.role === 'ADMIN' ? [['/utilisateurs', 'people', 'Gestion des utilisateurs'] as const, ['/admin/referentiels', 'references', t('admin.references')] as const] : []), ['/alahadin-taranaka', 'calendar', t('alahadin.title')], ['/soso-kevitra', 'suggestions', t('soso.moduleName')],
+    ['/admin', 'dashboard', t('admin.dashboard')], ['/personnes', 'people', t('admin.peopleMenu')], ['/branches', 'branches', t('admin.familyBranch')], ['/admin/demandes-inscription', 'requests', t('admin.requests')], ...(user?.compte.role === 'ADMIN' ? [['/utilisateurs', 'people', 'Gestion des utilisateurs'] as const, ['/admin/referentiels', 'references', t('admin.references')] as const] : []), ['/soso-kevitra', 'suggestions', t('soso.moduleName')], ['/tetikasa', 'briefcase', language === 'mg' ? 'Tetikasa' : 'Projets'], ['/fandraisan-anjara', 'chart', t('fandraisanAnjara.moduleName')],
   ] as const
   async function signOut() { await logout(); navigate('/connexion', { replace: true }) }
   return <aside className="admin-sidebar">

@@ -1,4 +1,6 @@
-export type TetikasaStatusCode = 'DRAFITRA'
+export type TetikasaStatusCode = 'DRAFITRA' | 'EN_ATTENTE_VALIDATION' | 'VALIDE' | 'REFUSE' | 'MISOKATRA'
+
+export type TetikasaTransitionAction = 'SOUMISSION_VALIDATION' | 'VALIDATION' | 'REFUS' | 'RETOUR_CORRECTION' | 'OUVRIR'
 
 export interface TetikasaPerson {
   id: string
@@ -7,6 +9,20 @@ export interface TetikasaPerson {
   nom_usage: string | null
 }
 
+export interface TetikasaListItem {
+  id: string
+  titre: string | null
+  statut: { code: TetikasaStatusCode }
+  created_by: Pick<TetikasaPerson, 'id' | 'nom' | 'prenom'>
+  lieu: string | null
+  lieu_non_defini: boolean
+  date_debut_prevue: string | null
+  date_fin_prevue: string | null
+  date_creation: string
+  date_modification: string
+  id_soso_kevitra_source: string | null
+  total_budget_calcule: string
+}
 export interface TetikasaResponsablePayload {
   id?: string
   id_personne: string

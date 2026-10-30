@@ -4,6 +4,8 @@ type JsonBody = object
 
 export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   body?: BodyInit | JsonBody | null
+  retryAfterRefresh?: boolean
+  expectedStatus?: number
 }
 
 export class ApiError extends Error {
@@ -65,7 +67,7 @@ async function refreshSession(): Promise<void> {
 }
 
 async function performRequest(path: string, options: ApiRequestOptions): Promise<{ response: Response; body: unknown }> {
-  const { body, headers, ...requestOptions } = options
+  const { body, headers, retryAfterRefresh: _retryAfterRefresh, expectedStatus: _expectedStatus, ...requestOptions } = options
   const requestHeaders = new Headers(headers)
   let requestBody: BodyInit | null | undefined = body as BodyInit | null | undefined
   if (isJsonBody(body)) {
@@ -84,7 +86,7 @@ async function performRequest(path: string, options: ApiRequestOptions): Promise
 export async function apiClient<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   let result = await performRequest(path, options)
 
-  if (result.response.status === 401 && shouldRefresh(path)) {
+  if (result.response.status === 401 && options.retryAfterRefresh !== false && shouldRefresh(path)) {
     try {
       await refreshSession()
     } catch {
@@ -99,6 +101,9 @@ export async function apiClient<T>(path: string, options: ApiRequestOptions = {}
   if (!result.response.ok) {
     const errorResponse = result.body !== null && typeof result.body === 'object' ? result.body as ApiErrorResponse : undefined
     throw new ApiError(result.response.status, errorResponse)
+  }
+  if (options.expectedStatus !== undefined && result.response.status !== options.expectedStatus) {
+    throw new Error('Réponse HTTP inattendue')
   }
   return result.body as T
 }

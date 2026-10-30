@@ -1,0 +1,60 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, Eye, Plus, RefreshCw } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { getFandraisanAnjaraParRazambe, listFandraisanAnjara } from '../../api/fandraisanAnjara'
+import { useAuth } from '../../hooks/useAuth'
+import { useLanguage } from '../../hooks/useLanguage'
+import { isBusinessManagerRole } from '../../types/auth'
+import type { FandraisanAnjaraListResponse, FandraisanAnjaraRazambeList } from '../../types/fandraisanAnjara'
+import './FandraisanAnjara.css'
+
+function money(value: string) { try { return `${new Intl.NumberFormat('fr-MG').format(BigInt(value))} Ar` } catch { return `${value} Ar` } }
+function date(value: string, language: string) { const parsed = new Date(`${value}T00:00:00`); return Number.isNaN(parsed.getTime()) ? value : new Intl.DateTimeFormat(language === 'mg' ? 'mg-MG' : 'fr-FR').format(parsed) }
+type ListFilters = { date_debut: string; date_fin: string; id_razambe: string; non_determine: boolean; statut: '' | 'ACTIF' | 'ANNULE'; page: number; limit: 10 | 20 | 50 }
+function readFilters(params: URLSearchParams): ListFilters { const limit = Number(params.get('limit')); return { date_debut: params.get('date_debut') ?? '', date_fin: params.get('date_fin') ?? '', id_razambe: params.get('id_razambe') ?? '', non_determine: params.get('non_determine') === 'true', statut: params.get('statut') === 'ACTIF' ? 'ACTIF' : params.get('statut') === 'ANNULE' ? 'ANNULE' : '', page: Math.max(1, Number(params.get('page')) || 1), limit: limit === 20 || limit === 50 ? limit : 10 } }
+function sameFilters(left: ListFilters, right: ListFilters) { return left.date_debut === right.date_debut && left.date_fin === right.date_fin && left.id_razambe === right.id_razambe && left.non_determine === right.non_determine && left.statut === right.statut && left.page === right.page && left.limit === right.limit }
+function pageNumbers(current: number, total: number) { if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1); const values: Array<number | 'start' | 'end'> = [1]; if (current > 3) values.push('start'); for (let page = Math.max(2, current - 1); page <= Math.min(total - 1, current + 1); page += 1) values.push(page); if (current < total - 2) values.push('end'); values.push(total); return values }
+
+export function FandraisanAnjaraListPage() {
+  const { t, language } = useLanguage(); const { user } = useAuth(); const [searchParams, setSearchParams] = useSearchParams()
+  const [items, setItems] = useState<FandraisanAnjaraListResponse | null>(null); const [razambe, setRazambe] = useState<FandraisanAnjaraRazambeList | null>(null)
+  const [filters, setFilters] = useState<ListFilters>(() => readFilters(searchParams))
+  const [loading, setLoading] = useState(true); const [error, setError] = useState('')
+  const listRequest = useRef(0)
+  const load = useCallback(() => { let active = true; const request = ++listRequest.current; setLoading(true); setError(''); void listFandraisanAnjara({ ...filters, date_debut: filters.date_debut || undefined, date_fin: filters.date_fin || undefined, id_razambe: filters.id_razambe || undefined, statut: filters.statut || undefined }).then((list) => { if (active && request === listRequest.current) setItems(list.data ?? null) }).catch(() => { if (active && request === listRequest.current) { setItems(null); setError(t('fandraisanAnjara.loadError')) } }).finally(() => { if (active && request === listRequest.current) setLoading(false) }); return () => { active = false } }, [filters, t])
+  useEffect(() => load(), [load])
+  useEffect(() => { let active = true; void getFandraisanAnjaraParRazambe().then((groups) => { if (active) setRazambe(groups.data ?? null) }).catch(() => { if (active) setRazambe(null) }); return () => { active = false } }, [])
+  const razambeNames = useMemo(() => new Map((razambe?.razambe ?? []).filter((group): group is typeof group & { id_razambe: string } => Boolean(group.id_razambe && group.nom_razambe_actuel?.trim())).map((group) => [group.id_razambe.toLowerCase(), group.nom_razambe_actuel!.trim()])), [razambe])
+  useEffect(() => { const next = readFilters(searchParams); setFilters((current) => sameFilters(current, next) ? current : next) }, [searchParams])
+  useEffect(() => { const next = new URLSearchParams(); if (filters.date_debut) next.set('date_debut', filters.date_debut); if (filters.date_fin) next.set('date_fin', filters.date_fin); if (filters.id_razambe) next.set('id_razambe', filters.id_razambe); if (filters.non_determine) next.set('non_determine', 'true'); if (filters.statut) next.set('statut', filters.statut); if (filters.page > 1) next.set('page', String(filters.page)); if (filters.limit !== 10) next.set('limit', String(filters.limit)); if (next.toString() !== searchParams.toString()) setSearchParams(next) }, [filters, searchParams, setSearchParams])
+  const update = (next: Partial<ListFilters>) => setFilters((current) => ({ ...current, ...next, page: next.page ?? 1 }))
+  useEffect(() => { const totalPages = items?.pagination.total_pages ?? 0; if (totalPages > 0 && filters.page > totalPages) update({ page: totalPages }) }, [filters.page, items?.pagination.total_pages])
+  const status = (value: 'ACTIF' | 'ANNULE') => value === 'ACTIF' ? t('fandraisanAnjaraWorkflow.statusActive') : t('fandraisanAnjaraWorkflow.statusCancelled')
+  const displayRazambe = (row: NonNullable<FandraisanAnjaraListResponse>['contributions'][number]) => { if (row.rattachements_historiques.resolution_razambe === 'NON_DETERMINE') return t('fandraisanAnjara.nonDetermined'); const idRazambe = row.rattachements_historiques.id_razambe; return idRazambe ? razambeNames.get(idRazambe.toLowerCase()) ?? t('fandraisanAnjara.unknownRazambe') : t('fandraisanAnjara.unknownRazambe') }
+  const rows = items?.contributions ?? []
+  const pagination = items?.pagination ?? { page: filters.page, limit: filters.limit, total: 0, total_pages: 0 }
+  const first = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1
+  const last = pagination.total === 0 ? 0 : Math.min(pagination.page * pagination.limit, pagination.total)
+  const pages = pageNumbers(pagination.page, pagination.total_pages)
+  return <main className="fandraisan-page fandraisan-list-page">
+    <section className="fandraisan-list-sheet">
+      <Link className="fandraisan-back" to="/fandraisan-anjara"><span aria-hidden="true">←</span>{t('fandraisanAnjara.backToDashboard')}</Link>
+      <header className="fandraisan-head"><div><p className="fandraisan-eyebrow">{t('fandraisanAnjara.eyebrow')}</p><h1>{t('fandraisanAnjara.listTitle')}</h1><p>{t('fandraisanAnjara.listSubtitle')}</p></div>{user && isBusinessManagerRole(user.compte.role) && <Link className="fandraisan-primary-link" to="/fandraisan-anjara/nouvelle"><Plus size={17} />{t('fandraisanAnjara.newContribution')}</Link>}</header>
+      <form className="fandraisan-filters fandraisan-list-filters" onSubmit={(event) => { event.preventDefault(); update({ page: 1 }) }}>
+      <label>{t('fandraisanAnjara.dateStart')}<input type="date" value={filters.date_debut} onChange={(event) => update({ date_debut: event.target.value })} /></label><label>{t('fandraisanAnjara.dateEnd')}<input type="date" value={filters.date_fin} onChange={(event) => update({ date_fin: event.target.value })} /></label>
+      <label>{t('fandraisanAnjara.razambe')}<select value={filters.non_determine ? 'NON_DETERMINE' : filters.id_razambe} onChange={(event) => { const value = event.target.value; update({ id_razambe: value === 'NON_DETERMINE' ? '' : value, non_determine: value === 'NON_DETERMINE' }) }}><option value="">{t('fandraisanAnjara.allRazambe')}</option><option value="NON_DETERMINE">{t('fandraisanAnjara.nonDetermined')}</option>{(razambe?.razambe ?? []).map((group) => <option key={group.id_razambe} value={group.id_razambe ?? ''}>{group.nom_razambe_actuel ?? t('fandraisanAnjara.unknownRazambe')}</option>)}</select></label>
+      <label>{t('fandraisanAnjara.status')}<select value={filters.statut} onChange={(event) => update({ statut: event.target.value as '' | 'ACTIF' | 'ANNULE' })}><option value="">{t('fandraisanAnjara.allStatuses')}</option><option value="ACTIF">{status('ACTIF')}</option><option value="ANNULE">{status('ANNULE')}</option></select></label><button type="submit">{t('fandraisanAnjara.applyFilters')}</button>
+      </form>
+      {loading && <section className="fandraisan-state"><RefreshCw className="fandraisan-spin" /><p>{t('fandraisanAnjara.loading')}</p></section>}
+      {!loading && error && <section className="fandraisan-state fandraisan-error"><p>{error}</p><button type="button" onClick={() => void load()}>{t('fandraisanAnjara.retry')}</button></section>}
+      {!loading && !error && <section className="fandraisan-list-card">
+        {rows.length === 0 ? <p className="fandraisan-list-empty">{t('fandraisanAnjara.noContributions')}</p> : <table><thead><tr><th>{t('fandraisanAnjara.date')}</th><th>{t('fandraisanAnjara.contributor')}</th><th>{t('fandraisanAnjara.razambe')}</th><th>{t('fandraisanAnjara.totalMoney')}</th><th>{t('fandraisanAnjara.materialSummary')}</th><th>{t('fandraisanAnjara.status')}</th><th>{t('fandraisanAnjara.actions')}</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td data-label={t('fandraisanAnjara.date')}>{date(row.date_contribution, language)}</td><td data-label={t('fandraisanAnjara.contributor')}><strong>{row.contributeur.libelle_snapshot}</strong><small>{row.contributeur.type}</small></td><td className="fandraisan-razambe-name" data-label={t('fandraisanAnjara.razambe')}>{displayRazambe(row)}</td><td className="fandraisan-list-money" data-label={t('fandraisanAnjara.totalMoney')}>{money(row.total_argent_mga)}</td><td data-label={t('fandraisanAnjara.materialSummary')}>{row.materiels.map((entry) => `${entry.designation} (${entry.quantite} ${entry.unite})`).join(', ') || '—'}</td><td data-label={t('fandraisanAnjara.status')}><span className={`fandraisan-status ${row.statut.toLowerCase()}`}>{status(row.statut)}</span></td><td className="fandraisan-list-actions" data-label={t('fandraisanAnjara.actions')}><Link className="fandraisan-view-link fandraisan-icon-link" to={`/fandraisan-anjara/${row.id}`} aria-label={t('fandraisanAnjara.viewDetails')} title={t('fandraisanAnjara.viewDetails')}><Eye size={18} aria-hidden="true" /></Link></td></tr>)}</tbody></table>}
+        <footer className="fandraisan-pagination">
+          <div className="fandraisan-pagination-summary"><span>{pagination.total} {t('fandraisanAnjara.contributions')}</span>{pagination.total > 0 && <p>{t('fandraisanAnjara.showing')} {first} {t('fandraisanAnjara.to')} {last} {t('fandraisanAnjara.of')} {pagination.total} {t('fandraisanAnjara.contributions')}</p>}</div>
+          <label className="fandraisan-page-size">{t('fandraisanAnjara.itemsPerPage')}<select value={filters.limit} onChange={(event) => update({ limit: Number(event.target.value) as ListFilters['limit'] })}><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label>
+          <nav className="fandraisan-page-controls" aria-label={t('fandraisanAnjara.pagination')}><button type="button" className="previous" disabled={pagination.page <= 1} onClick={() => update({ page: pagination.page - 1 })} aria-label={t('fandraisanAnjara.previous')}><ChevronLeft size={17} aria-hidden="true" /></button>{pages.map((page) => typeof page === 'number' ? <button type="button" key={page} className={page === pagination.page ? 'active' : ''} aria-current={page === pagination.page ? 'page' : undefined} onClick={() => update({ page })}>{page}</button> : <span className="fandraisan-page-ellipsis" key={page}>…</span>)}<button type="button" className="next" disabled={pagination.page >= pagination.total_pages || pagination.total_pages === 0} onClick={() => update({ page: pagination.page + 1 })} aria-label={t('fandraisanAnjara.next')}><ChevronRight size={17} aria-hidden="true" /></button></nav>
+        </footer>
+      </section>}
+    </section>
+  </main>
+}

@@ -8,6 +8,7 @@ import type {
   SosoMyItem,
   SosoPhoto,
   SosoPublicItem,
+  SosoTetikasaConversionResult,
 } from "../types/sosoKevitra";
 const base = "/api/soso-kevitra";
 const langPath = (path: string, language: "fr" | "mg") =>
@@ -108,6 +109,11 @@ export const decideSoso = (
   apiClient<ApiSuccess<unknown>>(`${base}/${encodeURIComponent(id)}/decision`, {
     method: "POST",
     body: { decision, observation: observation || null },
+  });
+export const creerTetikasa = (id: string) =>
+  apiClient<ApiSuccess<SosoTetikasaConversionResult>>(`${base}/${encodeURIComponent(id)}/creer-tetikasa`, {
+    method: "POST",
+    body: {},
   });
 export const supportSoso = (id: string) =>
   apiClient<

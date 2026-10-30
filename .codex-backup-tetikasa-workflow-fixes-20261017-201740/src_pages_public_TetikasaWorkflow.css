@@ -1,0 +1,13 @@
+.tetikasa-workflow { margin: 14px 0; padding: 16px; border: 1px solid #dfe9f5; border-radius: 12px; background: #fff; }
+.tetikasa-workflow-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tetikasa-workflow button { padding: 9px 13px; border: 1px solid #0964d9; border-radius: 8px; background: #fff; color: #0758c1; font: inherit; font-weight: 700; cursor: pointer; }
+.tetikasa-workflow button:focus-visible, .tetikasa-workflow textarea:focus-visible { outline: 3px solid #9cc6fa; outline-offset: 2px; }
+.tetikasa-workflow button:disabled { opacity: .55; cursor: not-allowed; }
+.tetikasa-workflow button.tetikasa-workflow-danger { border-color: #bd2937; color: #a92230; }
+.tetikasa-workflow-confirm { margin-top: 14px; padding: 14px; border-radius: 8px; background: #f3f7fd; }
+.tetikasa-workflow-confirm p { line-height: 1.5; }
+.tetikasa-workflow-confirm label { display: grid; gap: 6px; margin-bottom: 12px; font-weight: 700; }
+.tetikasa-workflow-confirm textarea { box-sizing: border-box; width: 100%; min-height: 90px; padding: 10px; border: 1px solid #bfd0e3; border-radius: 8px; font: inherit; }
+.tetikasa-workflow-error { margin-top: 12px; color: #a92230; }
+.tetikasa-workflow-error p { margin: 0 0 6px; }
+@media (max-width: 767px) { .tetikasa-workflow-actions { flex-direction: column; } .tetikasa-workflow-actions button { width: 100%; } }

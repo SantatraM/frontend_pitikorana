@@ -4315,6 +4315,9 @@ button:focus-visible {
   font-weight: 700;
   text-decoration: none;
 }
+
+/* Keep the blue sidebar usable when its navigation is taller than the viewport. */
+.admin-sidebar{box-sizing:border-box;min-height:0;overflow:hidden}.admin-navigation{min-height:0;flex:1 1 auto;overflow-x:hidden;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(215,234,255,.65) transparent}.admin-navigation::-webkit-scrollbar{width:8px}.admin-navigation::-webkit-scrollbar-track{background:transparent}.admin-navigation::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:999px;background:rgba(215,234,255,.6);background-clip:padding-box}.admin-navigation::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.82);background-clip:padding-box}.admin-sidebar-footer{flex:0 0 auto;margin-top:12px}
 @media (max-width: 42rem) {
   .person-profile-tabs {
     margin-inline: -14px;

@@ -1,0 +1,103 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { BriefcaseBusiness } from 'lucide-react'
+import { rechercherPersonnesInscription } from '../../api/demandesInscription'
+import { ApiError } from '../../api/apiClient'
+import { createTetikasa } from '../../api/tetikasa'
+import { useLanguage } from '../../hooks/useLanguage'
+import type { PersonneRecherchee } from '../../types/demandeInscription'
+import type { TetikasaRessourceType } from '../../types/tetikasa'
+import { CREATION_CURRENCY, creationPayload, validateCreation } from './tetikasaCreateValidation'
+import { TetikasaCreationUncertainAlert } from './TetikasaCreationUncertainAlert'
+import './TetikasaCreate.css'
+
+type Responsable = { person: PersonneRecherchee; principal: boolean }
+type Action = { titre: string; description: string; responsable: string; debut: string; fin: string }
+type Budget = { designation: string; quantite: string; prix: string }
+type Ressource = { type: TetikasaRessourceType; description: string; quantite: string; unite: string; observation: string }
+
+const messages = {
+  fr: { title: 'Nouveau projet', back: 'Retour aux projets', steps: ['Informations générales', 'Planification', 'Budget et ressources', 'Récapitulatif'], titre: 'Titre', description: 'Description', raison: 'Raison', objectif: 'Objectif', beneficiaires: 'Bénéficiaires', lieu: 'Lieu', lieuUnknown: 'Lieu non défini', debut: 'Date de début prévue', fin: 'Date de fin prévue', required: 'Le titre est obligatoire (200 caractères maximum).', dates: 'La date de fin doit suivre la date de début.', responsables: 'Responsables', search: 'Rechercher une personne (2 caractères minimum)', searching: 'Recherche en cours…', searchError: 'Recherche indisponible.', noResults: 'Aucune personne trouvée.', principal: 'Responsable principal', assigned: 'Retirez d’abord les affectations aux actions.', actions: 'Actions', addAction: 'Ajouter une action', none: 'Aucun responsable', responsable: 'Responsable', remove: 'Supprimer', budget: 'Budget', addBudget: 'Ajouter une ligne', designation: 'Désignation', quantity: 'Quantité', price: 'Prix unitaire estimé', total: 'Total prévisionnel', invalidAmounts: 'Vérifiez les quantités et prix pour calculer le total.', resources: 'Ressources', addResource: 'Ajouter une ressource', type: 'Type', unit: 'Unité', observation: 'Observation', currency: 'Devise', previous: 'Précédent', next: 'Suivant', draft: 'Enregistrer comme brouillon', submit: 'Enregistrer et soumettre pour validation', unavailable: 'L’enregistrement sera disponible après connexion à l’API.', initial: 'Statut initial : Brouillon', noItems: 'Aucun élément', types: { OLONA: 'Personnes', FAHAIZA_MANAO: 'Compétences', FITAOVANA_ZAVATRA: 'Matériel', FITATERANA: 'Transport', TOERANA: 'Lieu', HAFA: 'Autre' } },
+  mg: { title: 'Tetikasa vaovao', back: 'Hiverina amin’ny tetikasa', steps: ['Mombamomba ankapobeny', 'Fanomanana', 'Teti-bola sy loharano', 'Famintinana'], titre: 'Lohateny', description: 'Famaritana', raison: 'Antony', objectif: 'Tanjona', beneficiaires: 'Mpahazo tombontsoa', lieu: 'Toerana', lieuUnknown: 'Tsy mbola voafaritra ny toerana', debut: 'Daty fanombohana vinavinaina', fin: 'Daty famaranana vinavinaina', required: 'Tsy maintsy fenoina ny lohateny (litera 200 farafahakeliny).', dates: 'Tsy maintsy aorian’ny daty fanombohana ny daty famaranana.', responsables: 'Tompon’andraikitra', search: 'Mitadiava olona (litera 2 farafahakeliny)', searching: 'Mitady…', searchError: 'Tsy afaka mitady olona amin’izao.', noResults: 'Tsy misy olona hita.', principal: 'Tompon’andraikitra lehibe', assigned: 'Esory aloha ny andraikitra amin’ireo asa.', actions: 'Asa', addAction: 'Hanampy asa', none: 'Tsy misy tompon’andraikitra', responsable: 'Tompon’andraikitra', remove: 'Esory', budget: 'Teti-bola', addBudget: 'Hanampy andalana', designation: 'Anaran-javatra', quantity: 'Isa', price: 'Vidin’ny singa vinavinaina', total: 'Teti-bola vinavinaina', invalidAmounts: 'Hamarino ny isa sy ny vidiny mba hikajiana ny totaliny.', resources: 'Loharano', addResource: 'Hanampy loharano', type: 'Karazana', unit: 'Singany', observation: 'Fanamarihana', currency: 'Vola', previous: 'Miverina', next: 'Manaraka', draft: 'Tehirizo ho drafitra', submit: 'Tehirizo ary alefaso hohamarinina', unavailable: 'Mbola tsy azo tehirizina mandra-pifandraisana amin’ny API.', initial: 'Sata voalohany : Drafitra', noItems: 'Tsy misy', types: { OLONA: 'Olona', FAHAIZA_MANAO: 'Fahaiza-manao', FITAOVANA_ZAVATRA: 'Fitaovana', FITATERANA: 'Fitaterana', TOERANA: 'Toerana', HAFA: 'Hafa' } },
+} as const
+
+function scaled(value: string, decimals: number): bigint | null {
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(value.trim())
+  if (!match || (match[2]?.length ?? 0) > decimals) return null
+  return BigInt(match[1]) * 10n ** BigInt(decimals) + BigInt((match[2] ?? '').padEnd(decimals, '0') || '0')
+}
+function budgetTotal(rows: Budget[]): string | null {
+  let total = 0n
+  for (const row of rows) {
+    const quantity = scaled(row.quantite, 3); const price = scaled(row.prix, 2)
+    if (quantity === null || quantity <= 0n || price === null) return null
+    total += quantity * price
+  }
+  const whole = (total / 100000n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  const fraction = (total % 100000n).toString().padStart(5, '0').replace(/0+$/, '')
+  return `${whole}${fraction ? `,${fraction}` : ''} Ar`
+}
+
+export function TetikasaCreatePage() {
+  const { language } = useLanguage(); const m = messages[language]
+  const navigate = useNavigate()
+  const requestLock = useRef(false)
+  const [saving, setSaving] = useState(false)
+  const [uncertain, setUncertain] = useState(false)
+  const [step, setStep] = useState(0)
+  const [general, setGeneral] = useState({ titre: '', description: '', raison: '', objectif: '', beneficiaires: '', lieu: '', lieuUnknown: false, debut: '', fin: '' })
+  const [responsables, setResponsables] = useState<Responsable[]>([])
+  const [actions, setActions] = useState<Action[]>([])
+  const [budget, setBudget] = useState<Budget[]>([])
+  const [resources, setResources] = useState<Ressource[]>([])
+  const [query, setQuery] = useState(''); const [results, setResults] = useState<PersonneRecherchee[]>([])
+  const [searchState, setSearchState] = useState<'idle' | 'loading' | 'error' | 'done'>('idle')
+  const [error, setError] = useState('')
+  useEffect(() => {
+    const text = query.trim(); if (text.length < 2) { setResults([]); setSearchState('idle'); return }
+    let active = true
+    const timer = window.setTimeout(() => { setSearchState('loading'); void rechercherPersonnesInscription(text).then((response) => { if (active) { setResults(response.data ?? []); setSearchState('done') } }).catch(() => { if (active) { setResults([]); setSearchState('error') } }) }, 300)
+    return () => { active = false; window.clearTimeout(timer) }
+  }, [query])
+  const personName = (person: PersonneRecherchee) => [person.nom, person.prenom || person.nom_usage].filter(Boolean).join(' ')
+  const textField = (label: string, value: string, change: (value: string) => void, type = 'text') => <label>{label}<input type={type} value={value} onChange={(e) => change(e.target.value)} /></label>
+  const generalText = (key: 'titre' | 'description' | 'raison' | 'objectif' | 'beneficiaires' | 'lieu') => <label>{m[key]}{key === 'titre' || key === 'lieu' ? <input value={general[key]} maxLength={key === 'titre' ? 200 : undefined} onChange={(e) => setGeneral({ ...general, [key]: e.target.value })} /> : <textarea value={general[key]} onChange={(e) => setGeneral({ ...general, [key]: e.target.value })} />}</label>
+  const updateAction = (index: number, changes: Partial<Action>) => setActions((rows) => rows.map((row, i) => i === index ? { ...row, ...changes } : row))
+  const save = async (action: 'BROUILLON' | 'SOUMETTRE') => {
+    if (requestLock.current) return
+    const form = { general, responsables, actions, resources, budget }
+    const issue = validateCreation(form, action)
+    if (issue) {
+      const errors = language === 'fr'
+        ? { title: m.required, dates: m.dates, actions: 'Vérifiez les actions et leurs responsables.', resources: 'Vérifiez les ressources et leurs quantités.', budget: 'Vérifiez les lignes budgétaires et leurs montants.', incomplete: 'Complétez la description, l’objectif, les bénéficiaires, le lieu, les dates, un responsable et une action avant la soumission.' }
+        : { title: m.required, dates: m.dates, actions: 'Hamarino ny asa sy ny tompon’andraikitra.', resources: 'Hamarino ny loharano sy ny isany.', budget: 'Hamarino ny andalana sy ny vola ao amin’ny teti-bola.', incomplete: 'Fenoy ny famaritana, tanjona, mpisitraka, toerana, daty, tompon’andraikitra ary asa alohan’ny handefasana.' }
+      setError(errors[issue.code]); setStep(issue.step); return
+    }
+    requestLock.current = true; setSaving(true); setError('')
+    try {
+      const result = await createTetikasa(creationPayload(form, action))
+      navigate(`/tetikasa/${encodeURIComponent(result.id)}`)
+    } catch (reason: unknown) {
+      if (reason instanceof ApiError && [400, 401, 403, 409].includes(reason.status)) {
+        const labels = language === 'fr'
+          ? { 400: 'Données invalides. Vérifiez les champs saisis.', 401: 'Session expirée. Reconnectez-vous avant de réessayer.', 403: 'Vous ne disposez pas des droits nécessaires.', 409: 'Le projet est incomplet ou ne peut pas être soumis. Vérifiez les informations saisies.' }
+          : { 400: 'Tsy mety ny angona. Hamarino ireo saha.', 401: 'Tapitra ny fotoam-pifandraisana. Midira indray vao manandrana.', 403: 'Tsy manana fahazoan-dalana ianao.', 409: 'Tsy feno ny tetikasa na tsy azo alefa. Hamarino ny angona.' }
+        setError(labels[reason.status as 400 | 401 | 403 | 409]); requestLock.current = false
+      } else {
+        setUncertain(true)
+      }
+    } finally { setSaving(false) }
+  }
+  const next = () => { if (!general.titre.trim() || general.titre.length > 200) { setError(m.required); setStep(0); return } if (general.debut && general.fin && general.fin < general.debut) { setError(m.dates); setStep(1); return } if (actions.some((a) => a.debut && a.fin && a.fin < a.debut)) { setError(m.dates); setStep(2); return } setError(''); setStep((s) => Math.min(4, s + 1)) }
+  const total = budgetTotal(budget)
+  const stepLabels = language === 'fr' ? ['Informations principales', 'Responsables et calendrier', 'Actions et ressources', 'Budget et documents', 'Vérification finale'] : ['Mombamomba ny tetikasa', 'Tompon’andraikitra sy fotoana', 'Asa sy loharanon-karena', 'Teti-bola sy tahirin-kevitra', 'Famintinana farany']
+  const subtitle = language === 'fr' ? 'Préparez les informations du projet avant son enregistrement.' : 'Omano ny mombamomba ny tetikasa alohan’ny hitehirizana azy.'
+  return <main className="tetikasa-create"><Link to="/tetikasa">← {m.back}</Link><header className="tetikasa-create-heading"><span className="tetikasa-create-heading-icon" aria-hidden="true"><BriefcaseBusiness size={24} /></span><div><small>Tetikasa</small><h1>{m.title}</h1><p>{subtitle}</p></div></header><ol className="tetikasa-create-steps" aria-label={language === 'fr' ? 'Progression' : 'Dingana'}>{stepLabels.map((label, i) => <li key={label} className={i < step ? 'completed' : ''} aria-current={step === i ? 'step' : undefined}><span>{i + 1}</span><strong>{label}</strong></li>)}</ol>{uncertain && <TetikasaCreationUncertainAlert language={language} />}{error && <p role="alert">{error}</p>}
+    {step === 0 && <section><h2><span>1</span>{stepLabels[0]}</h2><div className="tetikasa-create-fields">{generalText('titre')}{generalText('description')}{generalText('raison')}{generalText('objectif')}{generalText('beneficiaires')}{generalText('lieu')}<label><input type="checkbox" checked={general.lieuUnknown} onChange={(e) => setGeneral({ ...general, lieuUnknown: e.target.checked })} /> {m.lieuUnknown}</label></div></section>}
+    {step === 1 && <section><h2><span>2</span>{stepLabels[1]}</h2><h3>{m.responsables}</h3>{textField(m.search, query, setQuery, 'search')}{searchState === 'loading' && <p>{m.searching}</p>}{searchState === 'error' && <p role="alert">{m.searchError}</p>}{searchState === 'done' && results.length === 0 && <p>{m.noResults}</p>}{results.filter((p) => !responsables.some((r) => r.person.id === p.id)).map((p) => <button key={p.id} type="button" onClick={() => { setResponsables([...responsables, { person: p, principal: false }]); setQuery('') }}>{personName(p)}</button>)}{responsables.map((r) => <div className="tetikasa-create-row" key={r.person.id}><strong>{personName(r.person)}</strong><label><input type="radio" name="principal" checked={r.principal} onChange={() => setResponsables(responsables.map((x) => ({ ...x, principal: x.person.id === r.person.id })))} />{m.principal}</label><button type="button" onClick={() => { if (actions.some((a) => a.responsable === r.person.id)) { setError(m.assigned); return } setError(''); setResponsables(responsables.filter((x) => x.person.id !== r.person.id)) }}>{m.remove}</button></div>)}{textField(m.debut, general.debut, (debut) => setGeneral({ ...general, debut }), 'date')}{textField(m.fin, general.fin, (fin) => setGeneral({ ...general, fin }), 'date')}</section>}
+    {step === 2 && <section><h2><span>3</span>{stepLabels[2]}</h2><h3>{m.actions}</h3>{actions.map((a, i) => <div className="tetikasa-create-card" key={i}>{textField(m.titre, a.titre, (titre) => updateAction(i, { titre }))}<label>{m.description}<textarea value={a.description} onChange={(e) => updateAction(i, { description: e.target.value })} /></label><label>{m.responsable}<select value={a.responsable} onChange={(e) => updateAction(i, { responsable: e.target.value })}><option value="">{m.none}</option>{responsables.map((r) => <option key={r.person.id} value={r.person.id}>{personName(r.person)}</option>)}</select></label>{textField(m.debut, a.debut, (debut) => updateAction(i, { debut }), 'date')}{textField(m.fin, a.fin, (fin) => updateAction(i, { fin }), 'date')}<button type="button" onClick={() => setActions(actions.filter((_, n) => n !== i))}>{m.remove}</button></div>)}<button type="button" onClick={() => setActions([...actions, { titre: '', description: '', responsable: '', debut: '', fin: '' }])}>{m.addAction}</button><h3>{m.resources}</h3>{resources.map((r, i) => <div className="tetikasa-create-card" key={i}><label>{m.type}<select value={r.type} onChange={(e) => setResources(resources.map((x, n) => n === i ? { ...x, type: e.target.value as TetikasaRessourceType } : x))}>{Object.entries(m.types).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>{(['description', 'quantite', 'unite', 'observation'] as const).map((key) => textField(key === 'quantite' ? m.quantity : key === 'unite' ? m.unit : m[key], r[key], (value) => setResources(resources.map((x, n) => n === i ? { ...x, [key]: value } : x))))}<button type="button" onClick={() => setResources(resources.filter((_, n) => n !== i))}>{m.remove}</button></div>)}<button type="button" onClick={() => setResources([...resources, { type: 'OLONA', description: '', quantite: '', unite: '', observation: '' }])}>{m.addResource}</button></section>}
+    {step === 3 && <section><h2><span>4</span>{stepLabels[3]}</h2><h3>{m.budget}</h3><label>{m.currency}<input value={`${CREATION_CURRENCY} — Ariary malgache`} readOnly /></label>{budget.map((b, i) => <div className="tetikasa-create-card" key={i}>{(['designation', 'quantite', 'prix'] as const).map((key) => textField(key === 'designation' ? m.designation : key === 'quantite' ? m.quantity : m.price, b[key], (value) => setBudget(budget.map((x, n) => n === i ? { ...x, [key]: value } : x))))}<button type="button" onClick={() => setBudget(budget.filter((_, n) => n !== i))}>{m.remove}</button></div>)}<button type="button" onClick={() => setBudget([...budget, { designation: '', quantite: '', prix: '' }])}>{m.addBudget}</button><p><strong>{m.total} : {total ?? m.invalidAmounts}</strong></p></section>}
+    {step === 4 && <section><h2><span>5</span>{stepLabels[4]}</h2><p>{m.initial}</p>{(['titre', 'description', 'raison', 'objectif', 'beneficiaires', 'lieu'] as const).map((key) => <p key={key}><strong>{m[key]} : </strong>{general[key] || '—'}</p>)}<p>{m.lieuUnknown} : {general.lieuUnknown ? '✓' : '—'}</p><p>{m.debut} : {general.debut || '—'} · {m.fin} : {general.fin || '—'}</p><h3>{m.responsables}</h3>{responsables.length ? responsables.map((r) => <p key={r.person.id}>{personName(r.person)} {r.principal && `— ${m.principal}`}</p>) : <p>{m.noItems}</p>}<h3>{m.actions}</h3>{actions.length ? actions.map((a, i) => <p key={i}>{a.titre || '—'} · {a.description || '—'} · {responsables.find((r) => r.person.id === a.responsable) ? personName(responsables.find((r) => r.person.id === a.responsable)!.person) : m.none} · {a.debut || '—'} – {a.fin || '—'}</p>) : <p>{m.noItems}</p>}<h3>{m.resources}</h3>{resources.length ? resources.map((r, i) => <p key={i}>{m.types[r.type]} · {r.description || '—'} · {r.quantite || '—'} {r.unite} · {r.observation || '—'}</p>) : <p>{m.noItems}</p>}<h3>{m.budget}</h3>{budget.length ? budget.map((b, i) => <p key={i}>{b.designation || '—'} · {b.quantite || '—'} × {b.prix || '—'}</p>) : <p>{m.noItems}</p>}<p>{m.currency} : {CREATION_CURRENCY}</p><p><strong>{m.total} : {total ?? m.invalidAmounts}</strong></p><button type="button" disabled={saving || uncertain} onClick={() => void save('BROUILLON')}>{m.draft}</button> <button type="button" disabled={saving || uncertain} onClick={() => void save('SOUMETTRE')}>{m.submit}</button></section>}
+    <nav className="tetikasa-create-navigation">{step > 0 && <button type="button" onClick={() => { setError(''); setStep(step - 1) }}>{m.previous}</button>}<button type="button" disabled={saving || uncertain} onClick={() => void save('BROUILLON')}>{m.draft}</button>{step < 4 && <button type="button" onClick={next}>{m.next}</button>}</nav>
+  </main>
+}

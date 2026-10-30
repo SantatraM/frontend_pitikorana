@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Package, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ApiError } from '../../api/apiClient'
+import { useLanguage } from '../../hooks/useLanguage'
 import { getTetikasa, updateTetikasaRessources } from '../../api/tetikasa'
 import type { TetikasaDetail, TetikasaRessourcePayload, TetikasaRessourceType } from '../../types/tetikasa'
 
@@ -38,8 +39,12 @@ function toPayload(rows: ResourceRow[]): TetikasaRessourcePayload[] {
   }))
 }
 
-function resourceTypeLabel(type: TetikasaRessourceType) {
-  return RESOURCE_TYPES.find((option) => option.value === type)?.label ?? type
+function resourceTypeLabel(type: TetikasaRessourceType, t: (key: any) => string) {
+  const labels: Record<TetikasaRessourceType, string> = {
+    OLONA: t('tetikasa.people'), FAHAIZA_MANAO: t('tetikasa.skills'), FITAOVANA_ZAVATRA: t('tetikasa.equipment'),
+    FITATERANA: t('tetikasa.transport'), TOERANA: t('tetikasa.place'), HAFA: t('tetikasa.other'),
+  }
+  return labels[type]
 }
 
 function isValidPositiveQuantity(value: string) {
@@ -49,6 +54,7 @@ function isValidPositiveQuantity(value: string) {
 }
 
 export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props) {
+  const { t } = useLanguage()
   const [rows, setRows] = useState<ResourceRow[]>([])
   const [initialRows, setInitialRows] = useState<TetikasaRessourcePayload[]>([])
   const [openKey, setOpenKey] = useState<string | null>(null)
@@ -100,7 +106,7 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
   }
 
   const removeResource = (row: ResourceRow) => {
-    if (!window.confirm(`Supprimer la ressource « ${row.description || 'sans description'} » ?`)) return
+    if (!window.confirm(t('tetikasa.replaceConfirm'))) return
     setRows((current) => current.filter((currentRow) => currentRow.key !== row.key))
     setErrors((current) => {
       const { [row.key]: _removed, ...remaining } = current
@@ -116,15 +122,15 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
     payload.forEach((resource, index) => {
       const resourceErrors: FieldErrors = {}
       if (!RESOURCE_TYPES.some((option) => option.value === resource.type_ressource)) {
-        resourceErrors.type_ressource = 'Le type de ressource est invalide.'
+        resourceErrors.type_ressource = t('tetikasa.invalidResourceType')
       }
-      if (!resource.description) resourceErrors.description = 'La description de la ressource est obligatoire.'
-      else if (resource.description.length > MAX_DESCRIPTION_LENGTH) resourceErrors.description = 'La description est trop longue.'
+      if (!resource.description) resourceErrors.description = t('tetikasa.descriptionRequired')
+      else if (resource.description.length > MAX_DESCRIPTION_LENGTH) resourceErrors.description = t('tetikasa.resourceDescriptionTooLong')
       if (resource.quantite && !isValidPositiveQuantity(resource.quantite)) {
-        resourceErrors.quantite = 'La quantité doit être un nombre strictement positif (12 chiffres maximum, dont 3 décimales).'
+        resourceErrors.quantite = t('tetikasa.resourceQuantityInvalid')
       }
-      if (resource.unite && resource.unite.length > MAX_UNIT_LENGTH) resourceErrors.unite = `L’unité ne peut pas dépasser ${MAX_UNIT_LENGTH} caractères.`
-      if (resource.observation && resource.observation.length > MAX_DESCRIPTION_LENGTH) resourceErrors.observation = 'L’observation est trop longue.'
+      if (resource.unite && resource.unite.length > MAX_UNIT_LENGTH) resourceErrors.unite = t('tetikasa.resourceUnitTooLong')
+      if (resource.observation && resource.observation.length > MAX_DESCRIPTION_LENGTH) resourceErrors.observation = t('tetikasa.resourceObservationTooLong')
       if (Object.keys(resourceErrors).length) nextErrors[rows[index].key] = resourceErrors
     })
     return nextErrors
@@ -136,11 +142,11 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
     const firstInvalidKey = Object.keys(nextErrors)[0]
     if (firstInvalidKey) {
       setOpenKey(firstInvalidKey)
-      setError('Corrigez les champs signalés avant d’enregistrer les ressources.')
+      setError(t('tetikasa.validationError'))
       return
     }
     if (!dirty || saving) return
-    if (!window.confirm('L’enregistrement remplace toutes les ressources et régénère leurs identifiants. Continuer ?')) return
+    if (!window.confirm(t('tetikasa.replaceConfirm'))) return
 
     setSaving(true)
     setError('')
@@ -148,11 +154,11 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
     try {
       await updateTetikasaRessources(id, item.revision, payload)
       const response = await getTetikasa(id)
-      if (!response.data) throw new Error('Drafitra introuvable après enregistrement.')
+      if (!response.data) throw new Error(t('tetikasa.resourceReloadMissing'))
       onUpdated(response.data)
-      setSuccess('Ressources enregistrées avec succès.')
+      setSuccess(t('tetikasa.resourcesSaved'))
     } catch (reason: unknown) {
-      setError(reason instanceof ApiError ? reason.message : 'Impossible d’enregistrer les ressources. Vos modifications locales sont conservées.')
+      console.error(reason); setError(reason instanceof ApiError && reason.status === 409 ? t('tetikasa.conflict') : t('tetikasa.apiError'))
     } finally {
       setSaving(false)
     }
@@ -161,11 +167,11 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
   return <section className="tetikasa-form-section tetikasa-collection-editor tetikasa-resources-editor">
     <header className="tetikasa-actions-editor-head">
       <div>
-        <h2><Package size={20} />Ressources du projet <span>{rows.length}</span></h2>
+        <h2><Package size={20} />{t('tetikasa.resourcesProject')} <span>{rows.length}</span></h2>
         <p className="tetikasa-editor-note">Les ressources sont enregistrées dans l’ordre affiché.</p>
       </div>
       {enabled && <button type="button" className="tetikasa-add-action" onClick={addResource} disabled={saving}>
-        <Plus size={18} aria-hidden="true" />Ajouter une ressource
+        <Plus size={18} aria-hidden='true' />{t('tetikasa.addResource')}
       </button>}
     </header>
 
@@ -177,7 +183,7 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
         const expanded = openKey === row.key
         const changed = JSON.stringify(payload[index]) !== JSON.stringify(initialRows[index])
         const rowErrors = errors[row.key]
-        const summary = [resourceTypeLabel(row.type_ressource), row.quantite ? `${row.quantite}${row.unite ? ` ${row.unite}` : ''}` : null]
+        const summary = [resourceTypeLabel(row.type_ressource, t), row.quantite ? `${row.quantite}${row.unite ? ` ${row.unite}` : ''}` : null]
           .filter(Boolean)
           .join(' · ')
 
@@ -185,21 +191,21 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
           <button type="button" className="tetikasa-action-summary" onClick={() => setOpenKey(expanded ? null : row.key)} aria-expanded={expanded}>
             <span className="tetikasa-action-number">{String(index + 1).padStart(2, '0')}</span>
             <span className="tetikasa-action-summary-text">
-              <strong>{row.description || 'Nouvelle ressource'}</strong>
+              <strong>{row.description || t('tetikasa.newResource')}</strong>
               <small>{summary}</small>
             </span>
-            {changed && <span className="tetikasa-action-change">Modifiée</span>}
+            {changed && <span className="tetikasa-action-change">{t('tetikasa.modified')}</span>}
             <ChevronDown className="tetikasa-action-chevron" size={18} aria-hidden="true" />
           </button>
 
           {enabled && <div className="tetikasa-action-summary-actions">
-            <button type="button" onClick={() => setOpenKey(row.key)} disabled={saving}><Pencil size={16} aria-hidden="true" />Modifier</button>
-            <button type="button" className="tetikasa-action-remove" onClick={() => removeResource(row)} disabled={saving}><Trash2 size={16} aria-hidden="true" />Supprimer</button>
+            <button type="button" onClick={() => setOpenKey(row.key)} disabled={saving}><Pencil size={16} aria-hidden="true" />{t('tetikasa.editItem')}</button>
+            <button type="button" className="tetikasa-action-remove" onClick={() => removeResource(row)} disabled={saving}><Trash2 size={16} aria-hidden="true" />{t('tetikasa.removeItem')}</button>
           </div>}
 
           {expanded && <div className="tetikasa-action-editor-content">
             <label>
-              Description *
+              {t('tetikasa.resourceDescription')} *
               <input
                 value={row.description}
                 maxLength={MAX_DESCRIPTION_LENGTH}
@@ -213,9 +219,9 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
 
             <div className="tetikasa-collection-fields">
               <label>
-                Type de ressource *
+                {t('tetikasa.resourceType')} *
                 <select value={row.type_ressource} aria-invalid={Boolean(rowErrors?.type_ressource)} disabled={!enabled || saving} onChange={(event) => updateRow(row.key, 'type_ressource', event.target.value as TetikasaRessourceType)}>
-                  {RESOURCE_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  {RESOURCE_TYPES.map((option) => <option key={option.value} value={option.value}>{resourceTypeLabel(option.value, t)}</option>)}
                 </select>
                 {rowErrors?.type_ressource && <small className="tetikasa-field-error">{rowErrors.type_ressource}</small>}
               </label>
@@ -239,12 +245,12 @@ export function TetikasaRessourcesEditor({ id, item, enabled, onUpdated }: Props
           </div>}
         </article>
       })}
-    </div> : <p className="tetikasa-empty">Aucune ressource définie pour le moment.</p>}
+    </div> : <p className="tetikasa-empty">{t('tetikasa.noResourceDefined')}</p>}
 
     {enabled && <footer className="tetikasa-actions-editor-footer">
-      <span>{dirty ? 'Des modifications locales ne sont pas encore enregistrées.' : 'Aucune modification à enregistrer.'}</span>
+      <span>{dirty ? t('tetikasa.localChanges') : t('tetikasa.noChanges')}</span>
       <button type="button" className="primary" disabled={!dirty || saving} onClick={() => void save()}>
-        {saving ? 'Enregistrement…' : 'Enregistrer les ressources'}
+        {saving ? t('tetikasa.saving') : t('tetikasa.saveResources')}
       </button>
     </footer>}
   </section>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, ChevronDown, ClipboardList, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ApiError } from '../../api/apiClient'
+import { useLanguage } from '../../hooks/useLanguage'
 import { getTetikasa, updateTetikasaActions } from '../../api/tetikasa'
 import type { TetikasaActionPayload, TetikasaDetail } from '../../types/tetikasa'
 
@@ -28,14 +29,15 @@ function toPayload(rows: ActionRow[]): TetikasaActionPayload[] {
   }))
 }
 
-function dateSummary(start: string | null, end: string | null) {
+function dateSummary(start: string | null, end: string | null, from: string, until: string, noPeriod: string) {
   if (start && end) return `${start} — ${end}`
-  if (start) return `À partir du ${start}`
-  if (end) return `Jusqu’au ${end}`
-  return 'Période non définie'
+  if (start) return from + ' ' + start
+  if (end) return until + ' ' + end
+  return noPeriod
 }
 
 export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
+  const { t } = useLanguage()
   const [rows, setRows] = useState<ActionRow[]>([])
   const [initialRows, setInitialRows] = useState<TetikasaActionPayload[]>([])
   const [openKey, setOpenKey] = useState<string | null>(null)
@@ -105,13 +107,13 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
     const nextErrors: Record<string, FieldErrors> = {}
     payload.forEach((action, index) => {
       const actionErrors: FieldErrors = {}
-      if (!action.titre) actionErrors.titre = 'Le titre de l’action est obligatoire.'
-      else if (action.titre.length > MAX_TITLE_LENGTH) actionErrors.titre = `Le titre ne peut pas dépasser ${MAX_TITLE_LENGTH} caractères.`
+      if (!action.titre) actionErrors.titre = t('tetikasa.actionTitleRequired')
+      else if (action.titre.length > MAX_TITLE_LENGTH) actionErrors.titre = t('tetikasa.actionTitleTooLong')
       if (action.id_responsable && !responsablesById.has(action.id_responsable)) {
-        actionErrors.id_responsable = 'Le responsable sélectionné doit appartenir aux responsables actuels du projet.'
+        actionErrors.id_responsable = t('tetikasa.actionResponsibleInvalid')
       }
       if (action.date_debut_prevue && action.date_fin_prevue && action.date_fin_prevue < action.date_debut_prevue) {
-        actionErrors.date_fin_prevue = 'La date de fin doit être postérieure ou égale à la date de début.'
+        actionErrors.date_fin_prevue = t('tetikasa.actionDatesInvalid')
       }
       if (Object.keys(actionErrors).length) nextErrors[rows[index].key] = actionErrors
     })
@@ -124,11 +126,11 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
     const firstInvalidKey = Object.keys(nextErrors)[0]
     if (firstInvalidKey) {
       setOpenKey(firstInvalidKey)
-      setError('Corrigez les champs signalés avant d’enregistrer les actions.')
+      setError(t('tetikasa.validationError'))
       return
     }
     if (!dirty || saving) return
-    if (!window.confirm('L’enregistrement remplace toutes les actions et régénère leurs identifiants. Continuer ?')) return
+    if (!window.confirm(t('tetikasa.replaceConfirm'))) return
 
     setSaving(true)
     setError('')
@@ -136,11 +138,11 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
     try {
       await updateTetikasaActions(id, item.revision, payload)
       const response = await getTetikasa(id)
-      if (!response.data) throw new Error('Drafitra introuvable après enregistrement.')
+      if (!response.data) throw new Error(t('tetikasa.actionReloadMissing'))
       onUpdated(response.data)
-      setSuccess('Actions enregistrées avec succès.')
+      setSuccess(t('tetikasa.actionsSaved'))
     } catch (reason: unknown) {
-      setError(reason instanceof ApiError ? reason.message : 'Impossible d’enregistrer les actions. Vos modifications locales sont conservées.')
+      console.error(reason); setError(reason instanceof ApiError && reason.status === 409 ? t('tetikasa.conflict') : t('tetikasa.apiError'))
     } finally {
       setSaving(false)
     }
@@ -149,11 +151,11 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
   return <section className="tetikasa-form-section tetikasa-actions-editor">
     <header className="tetikasa-actions-editor-head">
       <div>
-        <h2><ClipboardList size={20} />Actions du projet <span>{rows.length}</span></h2>
-        <p className="tetikasa-editor-note">Les actions sont enregistrées dans l’ordre affiché.</p>
+        <h2><ClipboardList size={20} />{t('tetikasa.actionsProject')} <span>{rows.length}</span></h2>
+        <p className="tetikasa-editor-note">{t('tetikasa.orderedItems')}</p>
       </div>
       {enabled && <button type="button" className="tetikasa-add-action" onClick={addAction} disabled={saving}>
-        <Plus size={18} aria-hidden="true" />Ajouter une action
+        <Plus size={18} aria-hidden="true" />{t('tetikasa.addAction')}
       </button>}
     </header>
 
@@ -165,28 +167,28 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
         const expanded = openKey === row.key
         const changed = JSON.stringify(payload[index]) !== JSON.stringify(initialRows[index])
         const responsible = row.id_responsable ? responsablesById.get(row.id_responsable) : null
-        const responsibleName = responsible ? [responsible.nom, responsible.prenom || responsible.nom_usage].filter(Boolean).join(' ') : 'Non attribué'
+        const responsibleName = responsible ? [responsible.nom, responsible.prenom || responsible.nom_usage].filter(Boolean).join(' ') : t('tetikasa.noResponsible')
         const rowErrors = errors[row.key]
 
         return <article key={row.key} className={`tetikasa-action-editor-row${expanded ? ' is-open' : ''}${changed ? ' is-changed' : ''}`}>
           <button type="button" className="tetikasa-action-summary" onClick={() => setOpenKey(expanded ? null : row.key)} aria-expanded={expanded}>
             <span className="tetikasa-action-number">{String(index + 1).padStart(2, '0')}</span>
             <span className="tetikasa-action-summary-text">
-              <strong>{row.titre || 'Nouvelle action'}</strong>
-              <small>{responsibleName} · {dateSummary(row.date_debut_prevue, row.date_fin_prevue)}</small>
+              <strong>{row.titre || t('tetikasa.newAction')}</strong>
+              <small>{responsibleName} · {dateSummary(row.date_debut_prevue, row.date_fin_prevue, t('tetikasa.from'), t('tetikasa.until'), t('tetikasa.noPeriod'))}</small>
             </span>
-            {changed && <span className="tetikasa-action-change">Modifiée</span>}
+            {changed && <span className="tetikasa-action-change">{t('tetikasa.modified')}</span>}
             <ChevronDown className="tetikasa-action-chevron" size={18} aria-hidden="true" />
           </button>
 
           {enabled && <div className="tetikasa-action-summary-actions">
-            <button type="button" onClick={() => setOpenKey(row.key)} disabled={saving}><Pencil size={16} aria-hidden="true" />Modifier</button>
-            <button type="button" className="tetikasa-action-remove" onClick={() => removeAction(row)} disabled={saving}><Trash2 size={16} aria-hidden="true" />Supprimer</button>
+            <button type="button" onClick={() => setOpenKey(row.key)} disabled={saving}><Pencil size={16} aria-hidden="true" />{t('tetikasa.editItem')}</button>
+            <button type="button" className="tetikasa-action-remove" onClick={() => removeAction(row)} disabled={saving}><Trash2 size={16} aria-hidden="true" />{t('tetikasa.removeItem')}</button>
           </div>}
 
           {expanded && <div className="tetikasa-action-editor-content">
             <label>
-              Titre de l’action *
+              {t('tetikasa.actionTitle')} *
               <input
                 value={row.titre}
                 maxLength={MAX_TITLE_LENGTH}
@@ -199,7 +201,7 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
             </label>
 
             <label>
-              Description
+              {t('tetikasa.actionDescription')}
               <textarea
                 value={row.description ?? ''}
                 maxLength={100000}
@@ -210,7 +212,7 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
 
             <div className="tetikasa-action-fields">
               <label>
-                Responsable
+                {t('tetikasa.actionResponsible')}
                 <select
                   value={row.id_responsable ?? ''}
                   aria-invalid={Boolean(rowErrors?.id_responsable)}
@@ -218,7 +220,7 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
                   disabled={!enabled || saving}
                   onChange={(event) => updateRow(row.key, 'id_responsable', event.target.value || null)}
                 >
-                  <option value="">Aucun responsable</option>
+                  <option value="">{t('tetikasa.noResponsible')}</option>
                   {item.responsables.map((responsableOption) => <option key={responsableOption.personne.id} value={responsableOption.personne.id}>
                     {[responsableOption.personne.nom, responsableOption.personne.prenom || responsableOption.personne.nom_usage].filter(Boolean).join(' ')}
                   </option>)}
@@ -226,11 +228,11 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
                 {rowErrors?.id_responsable && <small id={`tetikasa-action-${row.key}-responsible-error`} className="tetikasa-field-error">{rowErrors.id_responsable}</small>}
               </label>
               <label>
-                <span><CalendarDays size={16} aria-hidden="true" />Date de début prévue</span>
+                <span><CalendarDays size={16} aria-hidden="true" />{t('tetikasa.startDate')}</span>
                 <input type="date" value={row.date_debut_prevue ?? ''} disabled={!enabled || saving} onChange={(event) => updateRow(row.key, 'date_debut_prevue', event.target.value || null)} />
               </label>
               <label>
-                <span><CalendarDays size={16} aria-hidden="true" />Date de fin prévue</span>
+                <span><CalendarDays size={16} aria-hidden="true" />{t('tetikasa.endDate')}</span>
                 <input
                   type="date"
                   value={row.date_fin_prevue ?? ''}
@@ -245,12 +247,12 @@ export function TetikasaActionsEditor({ id, item, enabled, onUpdated }: Props) {
           </div>}
         </article>
       })}
-    </div> : <p className="tetikasa-empty">Aucune action définie pour le moment.</p>}
+    </div> : <p className="tetikasa-empty">{t('tetikasa.noActionDefined')}</p>}
 
     {enabled && <footer className="tetikasa-actions-editor-footer">
-      <span>{dirty ? 'Des modifications locales ne sont pas encore enregistrées.' : 'Aucune modification à enregistrer.'}</span>
+      <span>{dirty ? t('tetikasa.localChanges') : t('tetikasa.noChanges')}</span>
       <button type="button" className="primary" disabled={!dirty || saving} onClick={() => void save()}>
-        {saving ? 'Enregistrement…' : 'Enregistrer les actions'}
+        {saving ? t('tetikasa.saving') : t('tetikasa.saveActions')}
       </button>
     </footer>}
   </section>

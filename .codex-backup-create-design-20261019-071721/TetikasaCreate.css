@@ -1,0 +1,18 @@
+.tetikasa-create { max-width: 1050px; margin: 0 auto; padding: 24px; color: #142d50; }
+.tetikasa-create h1 { margin: 20px 0; }
+.tetikasa-create h2 { margin-top: 24px; }
+.tetikasa-create-steps { display: flex; flex-wrap: wrap; gap: 12px; padding: 0; list-style: none; }
+.tetikasa-create-steps li { padding: 8px 12px; border-radius: 8px; background: #edf3fa; }
+.tetikasa-create-steps [aria-current] { color: white; background: #0761d9; }
+.tetikasa-create section { background: white; border: 1px solid #dce6f2; border-radius: 12px; padding: 20px; }
+.tetikasa-create label { display: grid; gap: 6px; margin: 10px 0; }
+.tetikasa-create input:not([type=checkbox]):not([type=radio]), .tetikasa-create textarea, .tetikasa-create select { box-sizing: border-box; width: 100%; padding: 9px; border: 1px solid #b9cadf; border-radius: 6px; }
+.tetikasa-create textarea { min-height: 80px; resize: vertical; }
+.tetikasa-create input[type=checkbox], .tetikasa-create input[type=radio] { width: auto; }
+.tetikasa-create label:has(input[type=checkbox]), .tetikasa-create label:has(input[type=radio]) { display: flex; align-items: center; }
+.tetikasa-create button { padding: 8px 12px; border: 1px solid #a9bed9; border-radius: 6px; background: white; color: #124a92; cursor: pointer; }
+.tetikasa-create button:disabled { opacity: .55; cursor: not-allowed; }
+.tetikasa-create button:focus-visible, .tetikasa-create input:focus-visible, .tetikasa-create select:focus-visible, .tetikasa-create textarea:focus-visible { outline: 3px solid #76aeff; outline-offset: 2px; }
+.tetikasa-create-card { margin: 14px 0; padding: 14px; border: 1px solid #dce6f2; border-radius: 8px; }
+.tetikasa-create-row, .tetikasa-create-navigation { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+@media (max-width: 600px) { .tetikasa-create { padding: 14px; } .tetikasa-create section { padding: 14px; } }
