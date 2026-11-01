@@ -29,3 +29,5 @@ dist-ssr
 .codex/
 .codex-backup-*/
 *.codex-backup-*
+# Tests locaux
+/tests/
