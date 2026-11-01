@@ -1,3 +1,6 @@
+import { DemandeInformationPage } from '../pages/public/DemandeInformationPage'
+import { DemandesInformationPage } from '../pages/admin/DemandesInformationPage'
+import { DemandeInformationDetailPage } from '../pages/admin/DemandeInformationDetailPage'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '../components/layout/AppLayout'
 import { PersonnesLayout } from '../components/layout/PersonnesLayout'
@@ -19,6 +22,7 @@ import { InscriptionPage } from '../pages/public/InscriptionPage'
 import { NotFoundPage } from '../pages/public/NotFoundPage'
 import { SuiviInscriptionPage } from '../pages/public/SuiviInscriptionPage'
 import { PersonnesPage } from '../pages/public/PersonnesPage'
+import { PersonnesSansComptePage } from '../pages/public/PersonnesSansComptePage'
 import { PersonneProfilPage } from '../pages/public/PersonneProfilPage'
 import { PersonneModifierPage } from '../pages/public/PersonneModifierPage'
 import { PersonneArbrePage } from '../pages/public/PersonneArbrePage'
@@ -61,9 +65,11 @@ export function AppRouter() {
     <Route path="initialisation" element={<InitialisationPage />} />
     <Route path="inscription" element={<InscriptionPage />} />
     <Route path="suivi-inscription" element={<SuiviInscriptionPage />} />
+    <Route element={<PersonnesLayout />}><Route path="demande-information" element={<DemandeInformationPage />} /></Route>
     <Route element={<ProtectedRoute />}>
       <Route element={<PersonnesLayout />}>
         <Route path="personnes" element={<PersonnesPage />} />
+        <Route element={<RoleRoute role={["ADMIN", "PASTEUR"]} />}><Route path="personnes/sans-compte" element={<PersonnesSansComptePage />} /></Route>
         <Route path="personnes/:id/arbre" element={<PersonneArbrePage />} />
         <Route path="personnes/:id/foyer" element={<PersonneFoyerPage />} />
         <Route path="personnes/:id" element={<PersonneProfilPage />} />
@@ -93,7 +99,7 @@ export function AppRouter() {
     </Route>
     <Route element={<ProtectedRoute />}>
       <Route element={<RoleRoute role="MEMBRE" />}><Route element={<MembreLayout />}><Route path="membre" element={<TableauDeBordMembrePage />} /><Route path="membre/profil" element={<MonProfilMembrePage />} /><Route path="membre/profil/modifier" element={<ModifierMonProfilMembrePage />} /></Route></Route>
-      <Route element={<RoleRoute role={["ADMIN", "PASTEUR", "BUREAU_ZANAKA_AMPIELEZANA"]} />}><Route element={<AdminLayout />}><Route path="admin" element={<TableauDeBordAdminPage />} /><Route path="admin/profil" element={<MonProfilAdminPage />} /><Route path="admin/profil/modifier" element={<ModifierMonProfilAdminPage />} /><Route path="admin/demandes-inscription" element={<DemandesInscriptionPage />} /><Route path="admin/demandes-inscription/:id" element={<DemandeInscriptionDetailPage />} /><Route element={<RoleRoute role="ADMIN" />}><Route path="admin/referentiels" element={<ReferentielsPage />} /><Route path="utilisateurs" element={<UtilisateursPage />} /></Route></Route></Route>
+      <Route element={<RoleRoute role={["ADMIN", "PASTEUR", "BUREAU_ZANAKA_AMPIELEZANA"]} />}><Route element={<AdminLayout />}><Route path="admin" element={<TableauDeBordAdminPage />} /><Route path="admin/profil" element={<MonProfilAdminPage />} /><Route path="admin/profil/modifier" element={<ModifierMonProfilAdminPage />} /><Route element={<RoleRoute role={["ADMIN", "PASTEUR"]} />}><Route path="admin/demandes-information" element={<DemandesInformationPage />} /><Route path="admin/demandes-information/:id" element={<DemandeInformationDetailPage />} /></Route><Route path="admin/demandes-inscription" element={<DemandesInscriptionPage />} /><Route path="admin/demandes-inscription/:id" element={<DemandeInscriptionDetailPage />} /><Route element={<RoleRoute role="ADMIN" />}><Route path="admin/referentiels" element={<ReferentielsPage />} /><Route path="utilisateurs" element={<UtilisateursPage />} /></Route></Route></Route>
     </Route>
     <Route path="*" element={<NotFoundPage />} />
   </Route></Routes></BrowserRouter>

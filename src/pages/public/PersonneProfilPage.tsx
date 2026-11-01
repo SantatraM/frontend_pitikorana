@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import './Personnes.css'
 import { Link, useParams } from 'react-router-dom'
 import {
   BriefcaseBusiness,
@@ -27,7 +28,6 @@ import { useLanguage } from '../../hooks/useLanguage'
 import type { PreferencesConfidentialitePersonne } from '../../types/confidentialitePersonne'
 import type { ProfilPersonne } from '../../types/profil'
 import { getRelationDisplayLabel } from '../../utils/relationDisplay'
-import './Personnes.css'
 
 type DetailProps = { label: string; value: string | number | null | undefined; className?: string }
 
@@ -99,7 +99,7 @@ export function PersonneProfilPage() {
   if (typeof window !== 'undefined') {
     const isOwnMemberProfile = user?.compte.role === 'MEMBRE' && user.personne.id === profile.personne.id
     const canManage = profile.can_manage === true
-    return <section className="person-profile-sheet"><Link className="person-profile-back" to="/personnes">← {t('admin.newPersonBack')}</Link><PersonneProfileContent profile={profile} privacy={privacy} showConfidentiality={canManage && privacy !== null} showEdit={canManage} editTo={isOwnMemberProfile ? '/membre/profil/modifier' : undefined} editLabel={isOwnMemberProfile ? t('member.editProfile') : undefined} /></section>
+    return <><Link className="person-profile-back person-profile-back--public" to="/personnes">← {t('admin.newPersonBack')}</Link><PersonneProfileContent profile={profile} privacy={privacy} showConfidentiality={canManage && privacy !== null} showEdit={canManage} editTo={isOwnMemberProfile ? '/membre/profil/modifier' : undefined} editLabel={isOwnMemberProfile ? t('member.editProfile') : undefined} /></>
   }
 
   const personne = profile.personne
@@ -120,7 +120,7 @@ export function PersonneProfilPage() {
 
   return (
     <section className="person-profile-page">
-      <Link className="person-profile-back" to="/personnes">← {t('admin.newPersonBack')}</Link>
+      <Link className="person-profile-back person-profile-back--public" to="/personnes">← {t('admin.newPersonBack')}</Link>
 
       <header className="person-profile-hero">
         <div className="person-profile-avatar">

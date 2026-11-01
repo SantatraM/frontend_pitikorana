@@ -3,6 +3,9 @@ import { useAuth } from '../../hooks/useAuth'
 import { useLanguage } from '../../hooks/useLanguage'
 
 const titleFor = (pathname: string, t: ReturnType<typeof useLanguage>['t']) => {
+  if (pathname === '/demande-information') return t('information.title')
+  if (pathname.startsWith('/admin/demandes-information/')) return t('information.detail')
+  if (pathname === '/admin/demandes-information') return t('information.adminTitle')
   if (pathname.startsWith('/soso-kevitra')) return t('soso.moduleName')
   if (pathname === '/admin') return t('admin.dashboard')
   if (pathname === '/admin/profil') return t('admin.myProfile')

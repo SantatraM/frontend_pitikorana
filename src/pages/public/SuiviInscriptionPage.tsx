@@ -1,3 +1,4 @@
+import { normalizeTrackingCode } from '../../utils/inscriptionTracking'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../../api/apiClient'
@@ -70,15 +71,18 @@ export function SuiviInscriptionPage() {
 
   async function follow(event: FormEvent) {
     event.preventDefault()
+    if (busy) return
+    const normalizedCode = normalizeTrackingCode(code)
+    if (!normalizedCode) { setError(t('registration.tracking.invalidCode')); setDemande(null); return }
     setBusy(true)
     setError(null)
     setMessage(null)
     try {
-      const response = await suivreDemandeInscription({ reference, code_suivi: code })
+      const response = await suivreDemandeInscription({ reference: reference.trim().toUpperCase(), code_suivi: normalizedCode })
       setDemande(response.data ?? null)
     } catch (caughtError) {
       setDemande(null)
-      setError(caughtError instanceof ApiError ? caughtError.message : t('registration.tracking.followUnavailable'))
+      setError(caughtError instanceof ApiError && caughtError.status === 429 ? t('registration.tracking.rateLimited') : caughtError instanceof ApiError && caughtError.status === 401 ? t('registration.tracking.invalidCredentials') : t('registration.tracking.followUnavailable'))
     } finally {
       setBusy(false)
     }
@@ -86,6 +90,9 @@ export function SuiviInscriptionPage() {
 
   async function createAccount(event: FormEvent) {
     event.preventDefault()
+    if (busy) return
+    const normalizedCode = normalizeTrackingCode(code)
+    if (!normalizedCode) { setError(t('registration.tracking.invalidCode')); return }
     if (password !== confirmation) {
       setError(t('registration.tracking.passwordMismatch'))
       return
@@ -97,10 +104,10 @@ export function SuiviInscriptionPage() {
     setBusy(true)
     setError(null)
     try {
-      await creerCompteDepuisDemande({ reference, code_suivi: code, mot_de_passe: password })
+      await creerCompteDepuisDemande({ reference: reference.trim().toUpperCase(), code_suivi: normalizedCode, mot_de_passe: password })
       setMessage(t('registration.tracking.accountCreated'))
     } catch (caughtError) {
-      setError(caughtError instanceof ApiError ? caughtError.message : t('registration.tracking.accountUnavailable'))
+      setError(caughtError instanceof ApiError && caughtError.status === 429 ? t('registration.tracking.rateLimited') : caughtError instanceof ApiError && caughtError.status === 401 ? t('registration.tracking.invalidCredentials') : caughtError instanceof ApiError && caughtError.status < 500 ? caughtError.message : t('registration.tracking.accountUnavailable'))
     } finally {
       setBusy(false)
     }
@@ -138,7 +145,8 @@ export function SuiviInscriptionPage() {
           </label>
           <label>
             <span><TrackingIcon name="lock" />{t('registration.tracking.codeLabel')}</span>
-            <input type="text" value={code} onChange={(event) => setCode(event.target.value)} autoComplete="one-time-code" required />
+            <input type="text" value={code} onChange={(event) => setCode(event.target.value)} autoComplete="one-time-code" autoCapitalize="characters" spellCheck={false} maxLength={64} placeholder="KRM-58329" aria-describedby="tracking-code-help" required />
+            <small id="tracking-code-help">{t('registration.tracking.codeHelp')}</small>
           </label>
           <button type="submit" disabled={busy}><TrackingIcon name="search" />{busy ? t('registration.tracking.consulting') : t('registration.tracking.consult')}</button>
         </form>

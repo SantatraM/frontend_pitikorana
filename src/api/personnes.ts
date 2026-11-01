@@ -10,6 +10,42 @@ export const getPersonnes = (lang = "fr") =>
   apiClient<ApiSuccess<Personne[]>>(
     `/api/personnes?lang=${encodeURIComponent(lang)}`,
   );
+
+export interface PersonneSansCompte {
+  id_personne: string;
+  nom: string;
+  prenom: string | null;
+  email: string | null;
+  telephone: string | null;
+  whatsapp: string | null;
+}
+
+export interface PersonnesSansComptePagination {
+  page: number;
+  limit: 10 | 20 | 50;
+  total: number;
+  total_pages: number;
+}
+
+export interface PersonnesSansCompteResult {
+  personnes: PersonneSansCompte[];
+  pagination: PersonnesSansComptePagination;
+}
+
+export const getPersonnesSansCompte = (params: {
+  recherche?: string;
+  page?: number;
+  limit?: 10 | 20 | 50;
+} = {}) => {
+  const query = new URLSearchParams();
+  if (params.recherche) query.set("recherche", params.recherche);
+  if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
+  const suffix = query.size ? `?${query.toString()}` : "";
+  return apiClient<ApiSuccess<PersonnesSansCompteResult>>(
+    `/api/personnes/sans-compte${suffix}`,
+  );
+};
 export const getPersonnesByElement = (idElement: string, lang = "fr") =>
   apiClient<ApiSuccess<Personne[]>>(
     `/api/personnes/element/${encodeURIComponent(idElement)}?lang=${encodeURIComponent(lang)}`,

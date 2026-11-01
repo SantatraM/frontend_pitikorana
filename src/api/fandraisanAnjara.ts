@@ -20,3 +20,16 @@ export function listFoyersSelection(filters: { recherche?: string; page?: number
   const value = params.toString()
   return apiClient<ApiSuccess<FandraisanAnjaraFoyerSelectionResponse>>(`/api/foyers/selection${value ? `?${value}` : ''}`)
 }
+
+export interface ContributorOption { id: string; libelle: string }
+export interface ContributorSelectionPage {
+  contributeurs: ContributorOption[]
+  pagination: { page: number; limit: number; has_more: boolean }
+}
+export function searchContributors(filters: { type: import('../types/fandraisanAnjara').FandraisanAnjaraContributorType; recherche?: string; page?: number; id?: string }, signal?: AbortSignal) {
+  const params = new URLSearchParams({ type: filters.type })
+  if (filters.recherche) params.set('recherche', filters.recherche)
+  if (filters.page) params.set('page', String(filters.page))
+  if (filters.id) params.set('id', filters.id)
+  return apiClient<ApiSuccess<ContributorSelectionPage>>(`/api/fandraisan-anjara/contributeurs/selection?${params}`, { signal })
+}

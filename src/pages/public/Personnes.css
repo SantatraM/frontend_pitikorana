@@ -1,2 +1,81 @@
-/* Fiche des personnes: presentation-only refinements, scoped to the list and detail routes. */
-.admin-people-page{max-width:1280px;margin:0 auto;padding:26px 30px 42px;color:#0c2f66}.admin-people-sheet{border:1px solid #dbe7f3;border-radius:12px;padding:18px 20px 20px;background:#fff;box-shadow:0 3px 12px rgba(12,59,119,.045)}.admin-people-sheet>.admin-page-heading{margin:0;padding:3px 0 17px;border-bottom:1px solid #e1ebf5}.admin-people-sheet>.admin-page-heading h2{margin:0 0 5px;color:#092e68;font-size:clamp(1.55rem,2.5vw,2.15rem);letter-spacing:-.03em}.admin-people-sheet>.admin-page-heading span{color:#5677a4;font-size:.92rem;line-height:1.45}.admin-people-sheet>.admin-people-tools{margin:0;padding:16px 0;border:0;border-bottom:1px solid #e1ebf5;border-radius:0;box-shadow:none}.admin-people-sheet .admin-search{display:flex;align-items:center;gap:9px;max-width:560px;margin:0 0 14px;border:1px solid #c9dbee;border-radius:8px;padding:0 12px;background:#fbfdff;color:#6682a6}.admin-people-sheet .admin-search:focus-within{border-color:#0870df;box-shadow:0 0 0 3px rgba(8,112,223,.1)}.admin-people-sheet .admin-search input{width:100%;min-height:40px;padding:0;border:0;background:transparent;font-size:.84rem;outline:0}.admin-people-sheet .admin-people-filters{gap:11px}.admin-people-sheet .admin-people-filters label{font-size:.75rem}.admin-people-sheet .admin-people-filters select,.admin-people-sheet .admin-reset-filter{min-height:39px;border-radius:7px;font-size:.82rem}.admin-people-sheet .admin-people-table-wrap{margin-top:16px;border-color:#dce8f5;border-radius:9px;box-shadow:none;overflow-x:auto}.admin-people-sheet .admin-people-table{min-width:760px}.admin-people-sheet .admin-people-table th,.admin-people-sheet .admin-people-table td{height:auto;min-height:54px;padding:11px 13px;font-size:.8rem;white-space:normal;vertical-align:middle}.admin-people-sheet .admin-people-table th{height:auto;background:#eef6ff;font-size:.72rem}.admin-person-name-link{color:#163870;text-decoration:none}.admin-person-name-link:hover strong,.admin-person-name-link:hover{color:#0767dd}.admin-person-view{display:inline-grid;place-items:center;width:34px;height:34px;border:1px solid #cfe0f2;border-radius:7px;background:#fff;color:#0968d5;text-decoration:none;transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}.admin-person-view:hover{border-color:#8ebce9;background:#eef6ff}.admin-person-view:focus-visible,.admin-person-name-link:focus-visible{outline:3px solid rgba(8,112,223,.32);outline-offset:2px}.admin-people-sheet .admin-pagination{margin-top:0;padding:16px 0 0;border-top:1px solid #e1ebf5}.admin-people-sheet>.admin-empty,.admin-people-sheet>.form-error{margin:16px 0 0}.person-profile-sheet{max-width:1280px;margin:0 auto;padding:20px 30px 36px;border:1px solid #dbe7f3;border-radius:12px;background:#fff;box-shadow:0 3px 12px rgba(12,59,119,.045)}.person-profile-sheet>.person-profile-back{margin-bottom:12px}.person-profile-sheet .person-profile-page{margin:0;padding:0;background:transparent}.person-profile-sheet .person-profile-hero,.person-profile-sheet .person-profile-page .person-profile-card{border:0;border-radius:0;box-shadow:none}.person-profile-sheet .person-profile-hero{padding:3px 0 17px;border-bottom:1px solid #e1ebf5}.person-profile-sheet .person-profile-layout{gap:0;margin-top:0}.person-profile-sheet .person-profile-page .person-profile-card{padding:18px 0;border-bottom:1px solid #e1ebf5}.person-profile-sheet .person-profile-page .person-profile-card:last-child{border-bottom:0}.person-profile-sheet .person-profile-avatar img,.person-profile-sheet .person-profile-avatar span{border-radius:10px}.person-profile-sheet .person-profile-edit{padding:8px 11px;border:1px solid #bcd3eb;background:#fff;color:#1460be;font-size:.8rem}.person-profile-sheet .person-profile-edit:hover{background:#eff7ff}.person-profile-sheet .person-profile-section-title h2{font-size:1.04rem}.person-profile-sheet .person-profile-table-wrap{border-color:#dce8f5;border-radius:8px}.person-profile-sheet .person-profile-table th{background:#eef6ff}.person-profile-sheet .person-profile-card .person-profile-empty{margin:0;color:#6c86a5}@media(max-width:920px){.admin-people-page{padding:22px 20px}.person-profile-sheet{margin:0 20px;padding:18px}.admin-people-sheet .admin-people-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-people-sheet .admin-reset-filter{width:100%}}@media(max-width:620px){.admin-people-page{padding:18px 14px 30px}.admin-people-sheet{padding:14px 12px 16px;border-radius:10px}.admin-people-sheet>.admin-page-heading{align-items:stretch;padding-bottom:14px}.admin-people-sheet>.admin-page-heading .admin-button{width:100%}.admin-people-sheet .admin-people-tools{padding-block:14px}.admin-people-sheet .admin-people-filters{grid-template-columns:1fr}.admin-people-sheet .admin-reset-filter{width:100%}.admin-people-sheet .admin-people-mobile-list{margin-top:14px}.admin-people-sheet .admin-people-mobile-list article{border-color:#dce8f5;box-shadow:none}.admin-people-sheet .admin-people-mobile-list .admin-person-view{justify-self:end}.person-profile-sheet{margin:0 14px;padding:14px 12px 18px;border-radius:10px}.person-profile-sheet .person-profile-hero{grid-template-columns:1fr}.person-profile-sheet .person-profile-avatar img,.person-profile-sheet .person-profile-avatar span{width:100%;height:min(62vw,240px)}.person-profile-sheet .person-profile-layout{grid-template-columns:1fr}.person-profile-sheet .person-profile-page .person-profile-card{padding-block:15px}.person-profile-sheet .person-profile-family-summary{grid-template-columns:1fr}.person-profile-sheet .person-profile-coordinates{grid-template-columns:1fr}.person-profile-sheet .person-profile-contact-list{padding-left:0;border-left:0;border-top:1px solid #dce8f5;padding-top:10px}}
+/* Fiche des personnes: presentation-only refinements, scoped to the list route. */
+.admin-people-page{max-width:1280px;margin:0 auto;padding:26px 30px 42px;color:#0c2f66}
+.admin-people-sheet{border:1px solid #dbe7f3;border-radius:12px;padding:18px 20px 20px;background:#fff;box-shadow:0 3px 12px rgba(12,59,119,.045)}
+.admin-people-sheet>.admin-page-heading{margin:0;padding:3px 0 17px;border-bottom:1px solid #e1ebf5}
+.admin-people-sheet>.admin-page-heading h2{margin:0 0 5px;color:#092e68;font-size:clamp(1.55rem,2.5vw,2.15rem);letter-spacing:-.03em}
+.admin-people-sheet>.admin-page-heading span{color:#5677a4;font-size:.92rem;line-height:1.45}
+.admin-people-sheet>.admin-people-tools{margin:0;padding:16px 0;border:0;border-bottom:1px solid #e1ebf5;border-radius:0;box-shadow:none}
+.admin-people-sheet .admin-search{display:flex;align-items:center;gap:9px;max-width:560px;margin:0 0 14px;border:1px solid #c9dbee;border-radius:8px;padding:0 12px;background:#fbfdff;color:#6682a6}
+.admin-people-sheet .admin-search:focus-within{border-color:#0870df;box-shadow:0 0 0 3px rgba(8,112,223,.1)}
+.admin-people-sheet .admin-search input{width:100%;min-height:40px;padding:0;border:0;background:transparent;font-size:.84rem;outline:0}
+.admin-people-sheet .admin-people-filters{gap:11px}
+.admin-people-sheet .admin-people-filters label{font-size:.75rem}
+.admin-people-sheet .admin-people-filters select,.admin-people-sheet .admin-reset-filter{min-height:39px;border-radius:7px;font-size:.82rem}
+.admin-people-sheet .admin-people-table-wrap{margin-top:16px;border-color:#dce8f5;border-radius:9px;box-shadow:none;overflow-x:auto}
+.admin-people-sheet .admin-people-table{min-width:760px}
+.admin-people-sheet .admin-people-table th,.admin-people-sheet .admin-people-table td{height:auto;min-height:54px;padding:11px 13px;font-size:.8rem;white-space:normal;vertical-align:middle}
+.admin-people-sheet .admin-people-table th{height:auto;background:#eef6ff;font-size:.72rem}
+.admin-person-name-link{color:#163870;text-decoration:none}
+.admin-person-name-link:hover strong,.admin-person-name-link:hover{color:#0767dd}
+.admin-person-view{display:inline-grid;place-items:center;width:34px;height:34px;border:1px solid #cfe0f2;border-radius:7px;background:#fff;color:#0968d5;text-decoration:none;transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}
+.admin-person-view:hover{border-color:#8ebce9;background:#eef6ff}
+.admin-person-view:focus-visible,.admin-person-name-link:focus-visible{outline:3px solid rgba(8,112,223,.32);outline-offset:2px}
+.admin-people-sheet .admin-pagination{margin-top:0;padding:16px 0 0;border-top:1px solid #e1ebf5}
+.admin-people-sheet>.admin-empty,.admin-people-sheet>.form-error{margin:16px 0 0}
+.people-without-account-search{display:flex;align-items:end;gap:10px}.people-without-account-search .admin-button{min-height:40px}.people-without-account-pagination{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.people-without-account-pagination>span{margin-right:auto}.people-without-account-pagination label{display:flex;align-items:center;gap:7px;font-size:.8rem;color:#496987}.people-without-account-pagination select{min-height:34px;border:1px solid #c9dbee;border-radius:7px;padding:0 7px;background:#fff;color:#163870}.people-without-account-pagination i{font-style:normal;padding-inline:4px;color:#6682a6}.people-without-account-mobile{display:none}
+@media(max-width:920px){.admin-people-page{padding:22px 20px}.admin-people-sheet .admin-people-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-people-sheet .admin-reset-filter{width:100%}}
+@media(max-width:620px){.admin-people-page{padding:18px 14px 30px}.admin-people-sheet{padding:14px 12px 16px;border-radius:10px}.admin-people-sheet>.admin-page-heading{align-items:stretch;padding-bottom:14px}.admin-people-sheet>.admin-page-heading .admin-button{width:100%}.admin-people-sheet .admin-people-tools{padding-block:14px}.admin-people-sheet .admin-people-filters{grid-template-columns:1fr}.admin-people-sheet .admin-reset-filter{width:100%}.admin-people-sheet .admin-people-mobile-list{margin-top:14px}.admin-people-sheet .admin-people-mobile-list article{border-color:#dce8f5;box-shadow:none}.admin-people-sheet .admin-people-mobile-list .admin-person-view{justify-self:end}.people-without-account-search{align-items:stretch}.people-without-account-search .admin-button{width:auto}.people-without-account-table{display:none}.people-without-account-mobile{display:grid}.people-without-account-pagination{align-items:stretch}.people-without-account-pagination>span{margin-right:0}.people-without-account-pagination>div{display:flex;justify-content:center;width:100%}}
+
+/* Public profile: coordinates section interior only. */
+.person-profile-back--public + .person-profile-page .person-profile-coordinates {
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  align-items: start;
+  min-width: 0;
+}
+.person-profile-back--public + .person-profile-page .person-profile-address-list,
+.person-profile-back--public + .person-profile-page .person-profile-contact-list {
+  min-width: 0;
+  align-content: start;
+}
+.person-profile-back--public + .person-profile-page .person-profile-address-list .person-profile-detail {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+.person-profile-back--public + .person-profile-page .person-profile-contact-list > div {
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  row-gap: 4px;
+}
+.person-profile-back--public + .person-profile-page .person-profile-contact-list > div > strong,
+.person-profile-back--public + .person-profile-page .person-profile-contact-list > div > a {
+  grid-column: 2;
+}
+.person-profile-back--public + .person-profile-page .person-profile-coordinates span,
+.person-profile-back--public + .person-profile-page .person-profile-coordinates strong,
+.person-profile-back--public + .person-profile-page .person-profile-coordinates a {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Keep the contact divider vertical above narrow mobile widths. */
+.person-profile-back--public + .person-profile-page .person-profile-contact-list {
+  padding: 0 0 0 22px;
+  border-top: 0;
+  border-left: 1px solid #9ec4ef;
+}
+.person-profile-back--public + .person-profile-page .person-profile-contact-list > div:first-child {
+  padding-top: 0;
+}
+@media (max-width: 600px) {
+  .person-profile-back--public + .person-profile-page .person-profile-coordinates {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .person-profile-back--public + .person-profile-page .person-profile-contact-list {
+    padding: 14px 0 0;
+    border-top: 1px solid #9ec4ef;
+    border-left: 0;
+  }
+}

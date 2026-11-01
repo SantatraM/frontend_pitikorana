@@ -86,7 +86,7 @@ export function ConnexionPage() {
           {error && <p className="login-form-error" role="alert">{error}</p>}
           <button className="login-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? copy.submitting : <>{copy.submit} <span aria-hidden="true">→</span></>}</button>
         </form>
-        <button className="forgot-password" type="button" onClick={() => setRecoveryMessage(copy.passwordRecoveryUnavailable)}>{copy.forgotPassword}</button>
+        <div className="login-help-links"><button className="forgot-password" type="button" onClick={() => setRecoveryMessage(copy.passwordRecoveryUnavailable)}>{copy.forgotPassword}</button><Link className="forgot-password" to="/demande-information">{t('auth.login.needHelp')}</Link></div>
         {recoveryMessage && <p className="login-inline-message" role="status">{recoveryMessage}</p>}
         <div className="login-divider"><span />{copy.or}<span /></div>
         <div className="login-shortcuts">
